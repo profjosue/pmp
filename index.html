@@ -1,0 +1,2427 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planejador de Desenvolvimento de Carreira do Gerente de Projetos · v2 · PMCD (PMI) + Competências do Século XXI</title>
+<meta name="description" content="Ferramenta interativa de planejamento de carreira para gerentes de projeto: mapeamento de competências (PMI PMCD Framework), SWOT pessoal, plano de ação em três horizontes, feedback de pares e gestores, resumo gráfico e exportação.">
+<style>
+/* ============================================================
+   1. TOKENS E RESET
+   ============================================================ */
+:root{
+  --navy:#0d2540;
+  --navy-2:#16375c;
+  --teal:#0f766e;
+  --teal-l:#14b8a6;
+  --blue:#2563eb;
+  --amber:#b45309;
+  --rose:#be123c;
+  --violet:#6d28d9;
+  --bg:#f4f6f9;
+  --card:#ffffff;
+  --ink:#132132;
+  --ink-2:#42556b;
+  --ink-3:#6b7c90;
+  --line:#dfe5ec;
+  --line-2:#eef2f6;
+  --shadow:0 1px 2px rgba(16,37,64,.06), 0 8px 24px -12px rgba(16,37,64,.18);
+  --shadow-lg:0 24px 60px -30px rgba(13,37,64,.45);
+  --r:14px;
+  --r-sm:9px;
+  --mono:ui-monospace,SFMono-Regular,Menlo,Consolas,"Liberation Mono",monospace;
+  --sans:system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:var(--sans);font-size:16px;line-height:1.55;
+  -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{line-height:1.25;margin:0 0 .4em;color:var(--navy);letter-spacing:-.01em}
+h1{font-size:1.55rem}
+h2{font-size:1.28rem}
+h3{font-size:1.05rem}
+h4{font-size:.95rem}
+p{margin:0 0 .8em}
+a{color:var(--blue)}
+small{font-size:.82rem}
+code,kbd{font-family:var(--mono);font-size:.86em;background:#eef2f7;border:1px solid var(--line);border-radius:5px;padding:.08em .35em}
+hr{border:0;border-top:1px solid var(--line);margin:1.4rem 0}
+:focus-visible{outline:3px solid #7dd3fc;outline-offset:2px;border-radius:6px}
+
+/* ============================================================
+   2. CABEÇALHO E NAVEGAÇÃO
+   ============================================================ */
+.topo{
+  position:sticky;top:0;z-index:60;
+  background:linear-gradient(135deg,#0d2540,#14365b 55%,#0f4c5c);
+  color:#eaf2fb;box-shadow:0 6px 24px -14px rgba(0,0,0,.6);
+}
+.topo-in{max-width:1180px;margin:0 auto;padding:.7rem 1rem .5rem;display:flex;gap:1rem;align-items:center;flex-wrap:wrap}
+.marca{display:flex;gap:.7rem;align-items:center;min-width:0}
+.marca .logo{
+  width:38px;height:38px;flex:0 0 auto;border-radius:10px;
+  background:linear-gradient(140deg,#14b8a6,#0ea5e9);
+  display:grid;place-items:center;color:#062236;font-weight:800;font-size:.95rem;
+  box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)
+}
+.marca h1{font-size:1rem;margin:0;color:#fff;font-weight:650;letter-spacing:.1px}
+.marca .sub{font-size:.74rem;color:#a9c4dd;margin:0;text-transform:uppercase;letter-spacing:.09em}
+.topo-dir{margin-left:auto;display:flex;align-items:center;gap:.6rem;flex-wrap:wrap}
+.status-salvo{font-size:.76rem;color:#b7d3ea;display:flex;align-items:center;gap:.35rem;white-space:nowrap}
+.ponto{width:7px;height:7px;border-radius:50%;background:#34d399;box-shadow:0 0 0 3px rgba(52,211,153,.18)}
+.ponto.off{background:#fbbf24;box-shadow:0 0 0 3px rgba(251,191,36,.18)}
+/* barra de progresso geral */
+.prog{height:3px;background:rgba(255,255,255,.13);position:relative;overflow:hidden}
+.prog > i{display:block;height:100%;width:0;background:linear-gradient(90deg,#14b8a6,#38bdf8);transition:width .45s ease}
+
+nav.abas{background:#fff;border-bottom:1px solid var(--line);position:sticky;top:59px;z-index:55}
+nav.abas .in{max-width:1180px;margin:0 auto;display:flex;gap:.2rem;overflow-x:auto;padding:0 .6rem;scrollbar-width:thin}
+nav.abas button{
+  appearance:none;border:0;background:none;cursor:pointer;
+  font:inherit;font-size:.86rem;font-weight:600;color:var(--ink-3);
+  padding:.85rem .8rem;border-bottom:3px solid transparent;white-space:nowrap;
+  display:flex;align-items:center;gap:.45rem
+}
+nav.abas button .num{
+  width:20px;height:20px;border-radius:50%;background:#eef2f6;color:var(--ink-3);
+  font-size:.7rem;display:grid;place-items:center;font-weight:700
+}
+nav.abas button:hover{color:var(--navy)}
+nav.abas button[aria-selected="true"]{color:var(--navy);border-bottom-color:var(--teal)}
+nav.abas button[aria-selected="true"] .num{background:var(--teal);color:#fff}
+
+/* ============================================================
+   3. LAYOUT
+   ============================================================ */
+main{max-width:1180px;margin:0 auto;padding:1.4rem 1rem 4rem}
+.passo{display:none;animation:surge .25s ease}
+.passo.ativo{display:block}
+@keyframes surge{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.cartao{background:var(--card);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:1.15rem 1.25rem;margin-bottom:1.1rem}
+.cartao.estreito{max-width:820px}
+.grade{display:grid;gap:1rem}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g4{grid-template-columns:repeat(4,minmax(0,1fr))}
+@media(max-width:900px){.g4{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.g2,.g3,.g4{grid-template-columns:1fr}}
+
+.cabeca-secao{display:flex;gap:1rem;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;margin-bottom:1rem}
+.cabeca-secao .txt{max-width:74ch}
+.olho{font-size:.7rem;letter-spacing:.13em;text-transform:uppercase;color:var(--teal);font-weight:800;margin:0 0 .3rem}
+.lead{color:var(--ink-2);font-size:.96rem;margin:0}
+.mudo{color:var(--ink-3);font-size:.86rem}
+
+/* ============================================================
+   4. COMPONENTES
+   ============================================================ */
+.aviso{border-left:4px solid var(--blue);background:#f0f7ff;border-radius:0 var(--r-sm) var(--r-sm) 0;padding:.8rem 1rem;font-size:.9rem;color:#173c62;margin:0 0 1rem}
+.aviso.dica{border-color:var(--teal);background:#eefaf8;color:#0b4f4a}
+.aviso.atencao{border-color:var(--amber);background:#fff8ec;color:#6b3d05}
+.aviso strong{font-weight:700}
+.aviso p:last-child{margin-bottom:0}
+
+.botao{
+  appearance:none;border:1px solid transparent;cursor:pointer;font:inherit;font-weight:650;font-size:.88rem;
+  padding:.62rem 1rem;border-radius:10px;background:var(--navy);color:#fff;display:inline-flex;gap:.45rem;align-items:center;
+  transition:transform .08s ease,filter .15s ease,background .15s
+}
+.botao:hover{filter:brightness(1.12)}
+.botao:active{transform:translateY(1px)}
+.botao.sec{background:#fff;color:var(--navy);border-color:var(--line);box-shadow:0 1px 1px rgba(16,37,64,.05)}
+.botao.sec:hover{background:#f7fafc;filter:none}
+.botao.teal{background:var(--teal)}
+.botao.fantasma{background:transparent;color:var(--ink-2);border-color:transparent}
+.botao.fantasma:hover{background:#eef2f6;filter:none}
+.botao.perigo{background:#fff;color:var(--rose);border-color:#f5ccd6}
+.botao.perigo:hover{background:#fff1f4;filter:none}
+.botao.pequeno{padding:.35rem .6rem;font-size:.78rem;border-radius:8px}
+.linha-botoes{display:flex;gap:.55rem;flex-wrap:wrap;align-items:center}
+.espaco{margin-left:auto}
+
+label.campo{display:block;font-size:.8rem;font-weight:700;color:var(--ink-2);margin-bottom:.3rem;letter-spacing:.01em}
+input[type=text],input[type=date],input[type=number],select,textarea{
+  width:100%;font:inherit;font-size:.9rem;color:var(--ink);background:#fff;
+  border:1px solid var(--line);border-radius:9px;padding:.55rem .65rem;transition:border-color .15s,box-shadow .15s
+}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#7cc3f0;box-shadow:0 0 0 3px rgba(37,99,235,.12)}
+textarea{resize:vertical;min-height:84px;line-height:1.5}
+select{background-image:linear-gradient(45deg,transparent 50%,#8a9bb0 50%),linear-gradient(135deg,#8a9bb0 50%,transparent 50%);background-position:calc(100% - 16px) 55%,calc(100% - 11px) 55%;background-size:5px 5px,5px 5px;background-repeat:no-repeat;appearance:none;padding-right:2rem}
+
+.etiqueta{display:inline-flex;align-items:center;gap:.3rem;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase;padding:.2rem .5rem;border-radius:999px;background:#eef2f7;color:var(--ink-2);white-space:nowrap}
+.etiqueta.des{background:#e8f1fe;color:#1d4ed8}
+.etiqueta.pes{background:#eef7ee;color:#166534}
+.etiqueta.foco{background:#fff1e6;color:#9a3412}
+.etiqueta.novo{background:#f3ecfd;color:#5b21b6}
+.etiqueta.obj{background:#e5f7f3;color:#0b6b5f}
+.etiqueta.ok{background:#e7f7ef;color:#166534}
+.etiqueta.n{background:#f1f5f9;color:#64748b}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.75rem;margin-bottom:1rem}
+.kpi{background:#fff;border:1px solid var(--line);border-radius:var(--r-sm);padding:.75rem .85rem}
+.kpi .rot{font-size:.7rem;text-transform:uppercase;letter-spacing:.08em;color:var(--ink-3);font-weight:800}
+.kpi .val{font-size:1.5rem;font-weight:750;color:var(--navy);line-height:1.15;font-variant-numeric:tabular-nums}
+.kpi .nota{font-size:.76rem;color:var(--ink-3)}
+
+/* --- accordion de competência --- */
+.comp{border:1px solid var(--line);border-radius:var(--r-sm);margin-bottom:.6rem;background:#fff;overflow:hidden}
+.comp[data-aberto="true"]{box-shadow:var(--shadow)}
+.comp-cab{display:flex;gap:.75rem;align-items:center;padding:.65rem .8rem;background:#fbfcfe;cursor:pointer;flex-wrap:wrap}
+.comp-cab:hover{background:#f6f9fc}
+.comp-tit{display:flex;flex-direction:column;gap:.15rem;min-width:14ch;flex:1 1 260px}
+.comp-tit h4{margin:0;display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;font-size:.95rem}
+.comp-tit .ref{font-size:.72rem;color:var(--ink-3);font-family:var(--mono)}
+.comp-resumo{display:flex;gap:.4rem;align-items:center;flex-wrap:wrap}
+.pill{font-size:.76rem;font-weight:700;padding:.15rem .5rem;border-radius:999px;background:#eef2f7;color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pill.auto{background:#e8f1fe;color:#1d4ed8}
+.pill.par{background:#f3ecfd;color:#5b21b6}
+.pill.ges{background:#eef7ee;color:#166534}
+.comp-corpo{padding:.9rem;border-top:1px solid var(--line-2);display:none}
+.comp[data-aberto="true"] .comp-corpo{display:block}
+.comp-corpo .elem{margin:0 0 .9rem;padding:.6rem .8rem;background:#f8fafc;border:1px dashed var(--line);border-radius:8px;font-size:.83rem;color:var(--ink-2)}
+.comp-corpo .elem strong{color:var(--navy);font-size:.78rem;text-transform:uppercase;letter-spacing:.06em;display:block;margin-bottom:.2rem}
+.comp-corpo .elem ul{margin:.2rem 0 0;padding-left:1.1rem;columns:2;column-gap:1.4rem}
+@media(max-width:640px){.comp-corpo .elem ul{columns:1}}
+.notas{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin-bottom:.6rem}
+@media(max-width:760px){.notas{grid-template-columns:1fr}}
+.nota-item{border:1px solid var(--line);border-radius:9px;padding:.55rem .6rem;background:#fff}
+.nota-item .topo-nota{display:flex;justify-content:space-between;align-items:center;gap:.4rem;margin-bottom:.35rem}
+.nota-item .topo-nota span{font-size:.76rem;font-weight:800;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2)}
+.nota-item .topo-nota b{font-size:1.05rem;font-variant-numeric:tabular-nums;color:var(--navy);min-width:2.2ch;text-align:right}
+.nota-item.auto{border-color:#bcd6f7;background:#f7fbff}
+.nota-item.par{border-color:#ddd0f7;background:#fbf9ff}
+.nota-item.ges{border-color:#c7e6cc;background:#f8fdf8}
+input[type=range]{width:100%;accent-color:var(--teal);margin:.1rem 0 0}
+.limpar-nota{font-size:.7rem;border:0;background:none;color:var(--ink-3);cursor:pointer;text-decoration:underline;padding:0}
+
+/* ============================================================
+   5. SWOT
+   ============================================================ */
+.swot{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}
+@media(max-width:760px){.swot{grid-template-columns:1fr}}
+.swot .q{border-radius:var(--r);border:1px solid var(--line);padding:.85rem;background:#fff;position:relative;overflow:hidden}
+.swot .q::before{content:"";position:absolute;inset:0 auto 0 0;width:5px}
+.swot .q.f::before{background:#2563eb}
+.swot .q.w::before{background:#e11d48}
+.swot .q.o::before{background:#0f766e}
+.swot .q.t::before{background:#b45309}
+.swot .q h3{display:flex;align-items:center;gap:.5rem;font-size:.98rem;margin:0 0 .1rem}
+.swot .q .letra{width:24px;height:24px;border-radius:7px;display:grid;place-items:center;font-size:.8rem;color:#fff;font-weight:800}
+.swot .q.f .letra{background:#2563eb}
+.swot .q.w .letra{background:#e11d48}
+.swot .q.o .letra{background:#0f766e}
+.swot .q.t .letra{background:#b45309}
+.swot .q .ajuda{font-size:.79rem;color:var(--ink-3);margin:.15rem 0 .5rem}
+.swot textarea{min-height:130px;background:#fdfefe}
+
+/* ============================================================
+   6. PLANO DE AÇÃO
+   ============================================================ */
+.abas-h{display:inline-flex;background:#eef2f6;padding:3px;border-radius:10px;gap:2px;margin-bottom:1rem;flex-wrap:wrap}
+.abas-h button{appearance:none;border:0;background:none;font:inherit;font-size:.85rem;font-weight:700;color:var(--ink-2);padding:.45rem .85rem;border-radius:8px;cursor:pointer}
+.abas-h button[aria-selected="true"]{background:#fff;color:var(--navy);box-shadow:0 1px 3px rgba(16,37,64,.15)}
+.horizonte{display:none}
+.horizonte.ativo{display:block}
+.item-plano{border:1px solid var(--line);border-radius:var(--r-sm);padding:.85rem;margin-bottom:.8rem;background:#fff}
+.item-plano .cab{display:flex;align-items:center;gap:.5rem;margin-bottom:.6rem}
+.item-plano .cab .n{width:26px;height:26px;border-radius:8px;background:var(--navy);color:#fff;display:grid;place-items:center;font-size:.78rem;font-weight:800}
+.item-plano .grade-campos{display:grid;grid-template-columns:1.2fr .7fr 1fr;gap:.6rem}
+@media(max-width:820px){.item-plano .grade-campos{grid-template-columns:1fr}}
+.vazio{text-align:center;padding:1.6rem 1rem;border:1px dashed var(--line);border-radius:var(--r-sm);color:var(--ink-3);font-size:.9rem;background:#fbfcfe}
+
+/* ============================================================
+   7. RESUMO / GRÁFICO
+   ============================================================ */
+.legenda{display:flex;gap:1rem;flex-wrap:wrap;font-size:.79rem;color:var(--ink-2);margin:0 0 1rem}
+.legenda span{display:inline-flex;align-items:center;gap:.4rem}
+.chave{width:12px;height:12px;border-radius:3px;display:inline-block}
+.chave.auto{background:#2563eb}
+.chave.par{background:#7c3aed}
+.chave.ges{background:#0f766e}
+.chave.alvo{background:#94a3b8;height:3px;width:16px;border-radius:2px}
+
+.grafico{display:flex;flex-direction:column;gap:.5rem}
+.graf-linha{display:grid;grid-template-columns:200px 1fr;gap:.7rem;align-items:center}
+@media(max-width:700px){.graf-linha{grid-template-columns:1fr;gap:.15rem}}
+.graf-rot{font-size:.82rem;font-weight:650;color:var(--ink);line-height:1.25}
+.graf-rot .g-ref{display:block;font-size:.7rem;color:var(--ink-3);font-weight:500}
+.graf-barras{display:flex;flex-direction:column;gap:3px}
+.barra{height:13px;background:#f1f4f8;border-radius:4px;position:relative;overflow:hidden}
+.barra > i{display:block;height:100%;border-radius:4px;transition:width .4s ease}
+.barra.auto > i{background:linear-gradient(90deg,#3b82f6,#1d4ed8)}
+.barra.par > i{background:linear-gradient(90deg,#8b5cf6,#6d28d9)}
+.barra.ges > i{background:linear-gradient(90deg,#14b8a6,#0f766e)}
+.barra .val{position:absolute;right:5px;top:-1px;font-size:.66rem;font-weight:800;color:#334155;font-variant-numeric:tabular-nums}
+.barra.vazia > i{background:repeating-linear-gradient(45deg,#e5eaf0,#e5eaf0 4px,#eef2f6 4px,#eef2f6 8px)}
+.eixo{display:flex;justify-content:space-between;font-size:.68rem;color:var(--ink-3);padding-left:200px}
+@media(max-width:700px){.eixo{padding-left:0}}
+table.tabela{width:100%;border-collapse:collapse;font-size:.85rem}
+table.tabela th,table.tabela td{padding:.5rem .55rem;border-bottom:1px solid var(--line-2);text-align:left;vertical-align:top}
+table.tabela thead th{font-size:.7rem;text-transform:uppercase;letter-spacing:.07em;color:var(--ink-3);border-bottom:1px solid var(--line);background:#fbfcfe;position:sticky;top:0}
+table.tabela td.num{text-align:right;font-variant-numeric:tabular-nums;font-weight:650}
+.rolagem{overflow:auto;max-height:520px;border:1px solid var(--line);border-radius:var(--r-sm)}
+.gap-pos{color:#b45309;font-weight:800}
+.gap-neg{color:#0f766e;font-weight:800}
+
+/* ============================================================
+   8. PERGUNTAS CRÍTICAS
+   ============================================================ */
+.pergunta{display:grid;grid-template-columns:38px 1fr;gap:.7rem;padding:.9rem 0;border-bottom:1px solid var(--line-2)}
+.pergunta:last-child{border-bottom:0}
+.pergunta .nm{width:30px;height:30px;border-radius:9px;background:var(--navy);color:#fff;display:grid;place-items:center;font-weight:800;font-size:.82rem}
+.pergunta h4{margin:0 0 .25rem;font-size:.96rem}
+.pergunta p{margin:0 0 .5rem;font-size:.88rem;color:var(--ink-2)}
+.pergunta textarea{min-height:64px;font-size:.86rem;background:#fbfcfe}
+.bloco-tema{margin-bottom:1.2rem}
+.bloco-tema > h3{display:flex;gap:.5rem;align-items:center}
+
+/* ============================================================
+   9. DIVERSOS
+   ============================================================ */
+ul.lista{margin:.2rem 0 .8rem;padding-left:1.15rem}
+ul.lista li{margin-bottom:.35rem;color:var(--ink-2);font-size:.9rem}
+ul.lista li strong{color:var(--ink)}
+ol.passos{counter-reset:p;list-style:none;padding:0;margin:0}
+ol.passos > li{counter-increment:p;position:relative;padding-left:2.3rem;margin-bottom:.85rem;font-size:.9rem;color:var(--ink-2)}
+ol.passos > li::before{content:counter(p);position:absolute;left:0;top:0;width:1.65rem;height:1.65rem;border-radius:50%;background:#e8f1fe;color:#1d4ed8;display:grid;place-items:center;font-weight:800;font-size:.8rem}
+ol.passos > li strong{color:var(--ink)}
+details.ajuda-bloco{border:1px solid var(--line);border-radius:var(--r-sm);padding:.7rem .9rem;background:#fbfcfe;margin-bottom:.6rem}
+details.ajuda-bloco summary{cursor:pointer;font-weight:700;font-size:.9rem;color:var(--navy)}
+details.ajuda-bloco[open] summary{margin-bottom:.6rem}
+.faixa{background:linear-gradient(135deg,#0d2540,#123a5a);color:#e8f1fa;border-radius:var(--r);padding:1.2rem 1.3rem;margin-bottom:1.1rem}
+.faixa h2,.faixa h3{color:#fff}
+.faixa p{color:#c7d8e9}
+.faixa .botao.sec{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.28)}
+.faixa .botao.sec:hover{background:rgba(255,255,255,.18)}
+.rodape{border-top:1px solid var(--line);margin-top:1.5rem;padding-top:1rem;font-size:.78rem;color:var(--ink-3)}
+.toast{
+  position:fixed;left:50%;bottom:24px;transform:translate(-50%,20px);
+  background:#0d2540;color:#fff;padding:.6rem 1rem;border-radius:10px;font-size:.85rem;font-weight:600;
+  box-shadow:var(--shadow-lg);opacity:0;pointer-events:none;transition:.25s;z-index:200
+}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.duas-col{display:grid;grid-template-columns:1.15fr .85fr;gap:1rem;align-items:start}
+@media(max-width:900px){.duas-col{grid-template-columns:1fr}}
+.sticky-lado{position:sticky;top:120px}
+@media(max-width:900px){.sticky-lado{position:static}}
+
+/* ============================================================
+   10. IMPRESSÃO
+   ============================================================ */
+@media print{
+  body{background:#fff;font-size:11pt}
+  .topo,nav.abas,.nao-imprimir,.toast{display:none!important}
+  main{max-width:none;padding:0}
+  .passo:not(.ativo){display:none!important}
+  .passo{page-break-inside:auto}
+  .passo.ativo{display:block!important}
+  .cartao{box-shadow:none;border-color:#ccd;page-break-inside:avoid}
+  .comp-corpo{display:block!important}
+  .horizonte{display:block!important}
+  details.ajuda-bloco{display:block}
+  a[href]::after{content:""}
+}
+</style>
+</head>
+<body>
+
+<!-- ============ CABEÇALHO ============ -->
+<header class="topo">
+  <div class="topo-in">
+    <div class="marca">
+      <div class="logo" aria-hidden="true">PM</div>
+      <div>
+        <h1>Planejador de Carreira do Gerente de Projetos <span style="background:linear-gradient(135deg,#14b8a6,#0ea5e9);color:#062236;font-size:.62rem;font-weight:800;letter-spacing:.06em;padding:.16rem .42rem;border-radius:6px;vertical-align:middle">v2</span></h1>
+        <p class="sub">PMCD (PMI) + competências do século XXI</p>
+      </div>
+    </div>
+    <div class="topo-dir">
+      <span class="status-salvo" id="statusSalvo"><i class="ponto" aria-hidden="true"></i><span id="statusTxt">Salvo neste navegador</span></span>
+      <button class="botao sec pequeno nao-imprimir" type="button" id="btnSalvarAgora" title="Força o salvamento local e mostra o tamanho dos dados">Salvar</button>
+    </div>
+  </div>
+  <div class="prog" aria-hidden="true"><i id="barraProgresso"></i></div>
+</header>
+
+<!-- ============ NAVEGAÇÃO ============ -->
+<nav class="abas" aria-label="Etapas do planejamento">
+  <div class="in" role="tablist">
+    <button role="tab" id="aba-inicio" data-ir="inicio" aria-selected="true"><span class="num">i</span>Início e guia</button>
+    <button role="tab" id="aba-mapeamento" data-ir="mapeamento" aria-selected="false"><span class="num">1</span>Mapeamento</button>
+    <button role="tab" id="aba-swot" data-ir="swot" aria-selected="false"><span class="num">2</span>SWOT e objetivos</button>
+    <button role="tab" id="aba-plano" data-ir="plano" aria-selected="false"><span class="num">3</span>Plano de ação</button>
+    <button role="tab" id="aba-resumo" data-ir="resumo" aria-selected="false"><span class="num">4</span>Resumo e exportação</button>
+    <button role="tab" id="aba-critico" data-ir="critico" aria-selected="false"><span class="num">?</span>Pensamento crítico</button>
+  </div>
+</nav>
+
+<main>
+
+<!-- ============================================================
+     ETAPA 0 — INÍCIO E GUIA DO USUÁRIO
+     ============================================================ -->
+<section class="passo ativo" id="passo-inicio" role="tabpanel" aria-labelledby="aba-inicio">
+  <div class="faixa">
+    <p class="olho" style="color:#7ee0d0">Bem-vindo(a)</p>
+    <h2>Planeje a próxima etapa da sua carreira em gestão de projetos</h2>
+    <p style="max-width:74ch">Esta ferramenta conduz você por um percurso de quatro passos — <strong>mapear competências, olhar para si (SWOT), planejar ações e revisar resultados</strong> — com base no catálogo de competências do <strong>gerente de projetos</strong> do PMCD Framework (PMI). Ela foi pensada para ser usada <strong>fora da aula</strong>, no seu ritmo, e retomada sempre que você precisar planejar um novo horizonte de desenvolvimento.</p>
+    <p style="max-width:74ch;margin-top:.6rem;font-size:.86rem;color:#a9c4de"><strong>Versão 2:</strong> mantém o catálogo do PMCD (PMI) e acrescenta o módulo de competências do século XXI, a matriz cruzada de objetivos (FO · WO · FA · WT) e o alinhamento obrigatório entre ação, objetivo e competência. A versão 1, restrita ao PMI, continua no arquivo <code style="background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.25);color:#dbeafe">plano_carreira_pmcd.html</code>.</p>
+    <div class="linha-botoes" style="margin-top:1rem">
+      <button class="botao teal" type="button" data-ir="mapeamento">Começar pelo mapeamento →</button>
+      <button class="botao sec" type="button" data-ir="critico">Ver perguntas de reflexão crítica</button>
+    </div>
+  </div>
+
+  <div class="duas-col">
+    <div>
+      <div class="cartao">
+        <h2>Guia completo de uso</h2>
+        <p class="mudo">Leia esta seção antes de começar. Ela substitui a explicação oral da aula: em cerca de 8 minutos você entende o percurso inteiro e evita os erros mais comuns.</p>
+
+        <details class="ajuda-bloco" open>
+          <summary>1. O que a ferramenta faz (e o que ela não faz)</summary>
+          <p><strong>Faz:</strong> organiza sua autoavaliação em 32 competências do gerente de projetos (16 do PMCD + 16 complementares), registra o feedback de pares e gestores, ajuda a montar uma análise SWOT coerente com o mapeamento, converte os quadrantes em objetivos estratégicos (FO · WO · FA · WT) e estrutura um plano de ação em curto, médio e longo prazo, com cada ação vinculada a um objetivo e a uma competência e gera um resumo visual exportável.</p>
+          <p><strong>Não faz:</strong> não certifica, não classifica você em um nível oficial, não substitui uma avaliação formal de competências (assessment center, avaliação de desempenho, mesa de carreira) e não mede “potencial”. Ela é um instrumento de <em>reflexão estruturada</em> — o valor está na qualidade das evidências que você traz para dentro dela.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>2. De onde vêm as competências (base do catálogo)</summary>
+          <p>O catálogo foi extraído do <strong>PMCD Framework – Third Edition (PMI, 2017)</strong>, arquivo <code>PMCD_Framework.pdf</code> usado na disciplina. Foram incluídas <strong>apenas as competências do gerente de projetos</strong> (Apêndice X3 e Tabelas 3-1 e 3-2), divididas em dois grupos:</p>
+          <ul class="lista">
+            <li><strong>Competências de desempenho</strong> — 10 unidades, correspondentes às áreas de conhecimento do PMBOK® Guide: o que o gerente de projetos é capaz de <em>realizar</em> aplicando conhecimento e habilidade.</li>
+            <li><strong>Competências pessoais</strong> — 6 unidades: <em>Communicating, Leading, Managing, Cognitive Ability, Effectiveness, Professionalism</em>. Descrevem <em>comportamentos</em> que sustentam o desempenho.</li>
+          </ul>
+          <p class="mudo">As competências de <strong>gerente de programas</strong> e de <strong>gerente de portfólio</strong> — também tratadas no framework — foram deliberadamente excluídas, porque o foco aqui é a trajetória do gerente de projetos. Dentro de cada unidade estão listados os <strong>elementos de competência</strong> do framework, que servem de referência concreta (“o que eu deveria saber fazer”) no momento de atribuir sua nota.</p>
+          <p><strong>Nesta versão (v2)</strong>, além das 16 competências do PMCD, há um <strong>módulo complementar de 16 competências do século XXI</strong> (total de 32). Ele existe porque o PMCD é de 2017 e não cobre temas que hoje aparecem nas pesquisas globais e no mercado brasileiro: IA e dados, ética e LGPD, ESG, acumen de negócios, gestão de mudanças, negociação, liderança híbrida/intercultural, riscos psicossociais (NR-1), resiliência, criatividade e aprendizagem contínua. As competências complementares estão identificadas com a etiqueta <span class="etiqueta novo">Séc. XXI</span> e cada uma indica a fonte no próprio card. A versão 1 do arquivo permanece 100% alinhada ao PMI, sem esse módulo.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>2-bis. A cadeia de alinhamento: mapeamento → SWOT → objetivos → plano</summary>
+          <p>A v2 exige que o raciocínio seja encadeado. Cada etapa depende da anterior — e a ferramenta verifica isso:</p>
+          <ol class="passos">
+            <li><strong>Mapeamento</strong> (32 competências, notas 0–10 + feedback) gera os <em>insumos</em>: forças, fraquezas e divergências.</li>
+            <li><strong>SWOT</strong> organiza esses insumos em quatro quadrantes — e o bloco <strong>2.2</strong> cruza os quadrantes em <strong>objetivos estratégicos</strong>: FO (ofensiva), WO (reorientação), FA (defensiva) e WT (sobrevivência).</li>
+            <li><strong>Plano de ação</strong> só libera novas ações quando as quatro estratégias têm pelo menos um objetivo escrito.</li>
+            <li><strong>Cada ação</strong> precisa apontar <strong>um objetivo estratégico</strong> e <strong>uma competência do catálogo</strong>. Sem esses dois vínculos, o item fica marcado como “alinhamento pendente”.</li>
+            <li><strong>Resumo</strong> traz a <em>matriz de consistência</em>, que acusa objetivo sem ação, ação sem vínculo e competência-foco sem plano.</li>
+          </ol>
+          <p class="mudo">Por que essa rigidez? Porque o erro mais comum em planejamento de carreira é a lista de intenções desconectadas: cursos que não respondem a nenhuma lacuna e metas de competência que não se conectam a nenhuma oportunidade real.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>2-ter. Base de pesquisa do módulo século XXI</summary>
+          <p>As 16 competências complementares foram selecionadas a partir de fontes que vão além do PMCD. Resumo do que cada uma sustenta:</p>
+          <div class="rolagem" style="max-height:none;margin-bottom:.7rem">
+            <table class="tabela">
+              <thead><tr><th>Fonte</th><th>O que aporta ao módulo</th></tr></thead>
+              <tbody>
+                <tr><td><strong>PMI Talent Triangle</strong></td><td>Reposiciona o desenvolvimento do gerente em <em>Ways of Working</em> (abordagens de entrega), <em>Power Skills</em> (liderança colaborativa, comunicação, empatia) e <em>Business Acumen</em> (estratégia, finanças, mercado) — categorias ausentes como tais no PMCD.</td></tr>
+                <tr><td><strong>WEF — Future of Jobs Report 2025</strong></td><td>Competências centrais para 2025–2030: pensamento analítico (1º), resiliência/flexibilidade/agilidade, liderança e influência social, pensamento criativo, curiosidade e aprendizagem contínua, empatia e escuta ativa; maior crescimento em IA e big data, letramento tecnológico e gestão ambiental.</td></tr>
+                <tr><td><strong>IPMA ICB4</strong></td><td>Amplia o olhar de contexto (Perspective: estratégia, governança, cultura e valores, poder e interesses), pessoas (negociação, autorreflexão, integridade) e sustentabilidade (guia específico de gestão sustentável de projetos).</td></tr>
+                <tr><td><strong>AI &amp; Project Management 2025</strong> (Nieto-Rodriguez &amp; Viana Vargas)</td><td>Competências emergentes apontadas por profissionais: análise de dados (63%), letramento em IA e engenharia de prompt (58%), pensamento crítico e consciência ético-legal (44%).</td></tr>
+                <tr><td><strong>Panorama Gestão de Projetos Brasil</strong> (Artia, 2024–2026)</td><td>Contexto brasileiro: adoção acelerada de IA nos projetos, insatisfação com resultados e demanda por habilidades de gestão de riscos, conflitos, comunicação e condução de mudanças.</td></tr>
+                <tr><td><strong>NR-1</strong> (Portaria MTE 1.419/2024) e <strong>LGPD</strong></td><td>Obrigações legais no Brasil que criam competência prática para o gerente: riscos psicossociais no PGR e tratamento responsável de dados — itens que não existiam no PMCD.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mudo">Links das fontes estão no rodapé da página. Nenhuma competência foi inventada para o módulo PMCD: as 16 originais seguem exatamente o Apêndice X3 do PDF da disciplina.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>3. Como funciona a escala de 0 a 10 (e sua relação com a escala 1–5 do PMCD)</summary>
+          <p>A ferramenta usa 0 a 10 porque permite granularidade maior na autoavaliação. O PMCD Framework usa uma escala indicativa de 1 a 5 níveis. Use esta correspondência aproximada como referência mental:</p>
+          <div class="rolagem" style="max-height:none;margin-bottom:.7rem">
+            <table class="tabela">
+              <thead><tr><th>Nota 0–10</th><th>PMCD 1–5</th><th>Significado prático</th></tr></thead>
+              <tbody>
+                <tr><td class="num">0 – 2</td><td class="num">1</td><td>Pouca experiência ou conhecimento; nunca executei de forma autônoma.</td></tr>
+                <tr><td class="num">3 – 4</td><td class="num">2</td><td>Algum conhecimento e experiência; já fiz, mas com apoio frequente.</td></tr>
+                <tr><td class="num">5 – 6</td><td class="num">3</td><td>Demonstro a competência, às vezes parcialmente e ainda sob supervisão.</td></tr>
+                <tr><td class="num">7 – 8</td><td class="num">4</td><td>Competência plena, sustentada por conhecimento e experiência.</td></tr>
+                <tr><td class="num">9 – 10</td><td class="num">5</td><td>Competência plena com conhecimento profundo e experiência ampla; reconhecido como referência.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="mudo">Regra de ouro: <strong>a nota deve descrever o que você já demonstrou em projetos reais</strong>, não o que você estudou ou pretende fazer. Se não houver evidência, a nota honesta é baixa — e isso é informação útil, não fracasso.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>4. Passo a passo das etapas (com tempo estimado)</summary>
+          <ol class="passos">
+            <li><strong>Mapeamento (25–40 min).</strong> Percorra as competências — comece pelo bloco PMCD e siga para as complementares prioritárias —, abra os elementos/indicadores de referência e atribua sua nota. Registre observações curtas com <em>evidências</em>: nome do projeto, papel, resultado, data. Marque no máximo 3 competências como <strong>foco</strong>.</li>
+            <li><strong>SWOT pessoal (15–20 min).</strong> Use as competências com notas mais altas como base das forças e as mais baixas (e as maiores divergências com o feedback) como base das fraquezas. Oportunidades e ameaças vêm do <em>contexto</em>: organização, mercado, tecnologia, rede de contatos.</li>
+            <li><strong>Objetivos estratégicos — matriz cruzada (15–20 min).</strong> Cruze os quadrantes e escreva pelo menos um objetivo por estratégia: FO (ofensiva), WO (reorientação), FA (defensiva) e WT (sobrevivência). Cada objetivo pede prazo, indicador e, de preferência, uma competência-âncora.</li>
+            <li><strong>Plano de ação (20–30 min).</strong> Distribua as ações nos três horizontes; cada ação deve apontar <strong>um objetivo da etapa anterior</strong> e <strong>uma competência do catálogo</strong>, com meta, prazo e indicador.</li>
+            <li><strong>Resumo e exportação (5–10 min).</strong> Compare autoavaliação e feedback externo, percorra a <strong>matriz de consistência</strong> e exporte o conteúdo em texto, CSV, JSON ou PDF.</li>
+          </ol>
+          <p class="mudo">Tempo total: cerca de 1h20 a 2h. Para a versão de 50 minutos, veja o item 7.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>5. Como usar o feedback de pares e gestores</summary>
+          <ul class="lista">
+            <li><strong>Quem convidar:</strong> 2 a 4 pessoas que trabalharam com você em projetos — pelo menos um par e um gestor/sponsor. Evite quem só conhece seu trabalho por relatos.</li>
+            <li><strong>Como pedir:</strong> envie a lista das competências e a escala de notas; peça nota <em>e um exemplo observado</em> (“o que você viu que justifica essa nota?”). Sem exemplo, o número é opinião solta.</li>
+            <li><strong>O que registrar aqui:</strong> a média ou a nota que a pessoa atribuiu, e na observação o exemplo dado e quem avaliou (ex.: “Par: A.C. — viu a negociação do cronograma com o fornecedor”).</li>
+            <li><strong>Como ler a divergência:</strong> autoavaliação muito acima do externo sugere ponto cego ou excesso de confiança; muito abaixo sugere autoexigência excessiva ou baixa visibilidade do seu trabalho. Ambas as situações são material de desenvolvimento.</li>
+            <li><strong>Ética:</strong> feedback é dado, não avaliação pública. Não exponha pessoas nem projetos confidenciais nos campos de texto se for compartilhar o arquivo.</li>
+          </ul>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>6. Como escolher prioridades e escrever bons itens de plano</summary>
+          <p>A ferramenta calcula a <strong>média externa</strong> (pares e gestores) e o <strong>gap</strong> = sua nota − média externa. Priorize combinando três critérios:</p>
+          <ul class="lista">
+            <li><strong>Relevância para o próximo passo da carreira</strong> (o que o seu cargo-alvo exige);</li>
+            <li><strong>Tamanho da lacuna</strong> (nota baixa e/ou gap negativo com o feedback);</li>
+            <li><strong>Alavancagem</strong> (competências que destravam outras — ex.: comunicação, gestão de riscos, gestão de partes interessadas).</li>
+          </ul>
+          <p>Um bom item de plano tem quatro partes: <strong>meta</strong> (nível alvo verificável), <strong>ação</strong> (atividade concreta, não “estudar mais”), <strong>prazo</strong> (data) e <strong>indicador</strong> (como você saberá que avançou). Exemplo: meta “passar de 4 para 7 em gestão de riscos”; ação “facilitar oficina de identificação de riscos em 2 projetos e manter registro no RAID log”; prazo “31/03”; indicador “2 oficinas realizadas + registro revisado pelo PMO”.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>7. Versão expressa para 50 minutos</summary>
+          <ol class="passos">
+            <li><strong>8 min</strong> — Leia este guia (itens 1, 2, 2-bis e 3) e avalie 6 competências: 3 do bloco PMCD e 3 do módulo século XXI que sejam decisivas para você.</li>
+            <li><strong>6 min</strong> — Escreva uma evidência por competência avaliada.</li>
+            <li><strong>7 min</strong> — Preencha uma linha em cada quadrante da SWOT.</li>
+            <li><strong>12 min</strong> — Escreva um objetivo para cada estratégia (FO, WO, FA, WT) — é o que libera o plano.</li>
+            <li><strong>12 min</strong> — Crie uma ação por horizonte, vinculada a um objetivo e a uma competência.</li>
+            <li><strong>5 min</strong> — Veja o resumo, a matriz de consistência, exporte e escolha 2 perguntas de pensamento crítico para o debate.</li>
+          </ol>
+          <p class="mudo">Você pode avaliar só parte do catálogo: o resumo considera apenas o que foi preenchido. O plano exige os quatro objetivos — mas, na versão expressa, um objetivo curto por quadrante é suficiente. Retome depois para qualificar.</p>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>8. Persistência, privacidade e exportação</summary>
+          <ul class="lista">
+            <li>Os dados ficam <strong>somente no seu navegador</strong> (localStorage), no dispositivo em que você usou a ferramenta. Nada é enviado para servidores.</li>
+            <li>Se você limpar os dados do navegador, usar janela anônima ou trocar de computador/celular, o conteúdo <strong>não</strong> aparece. Exporte o backup em JSON com frequência.</li>
+            <li>No mesmo navegador, cada aba usa o mesmo armazenamento — evite editar em duas abas ao mesmo tempo.</li>
+            <li><strong>Exportar:</strong> “Relatório em texto” (para colar no Moodle/Word), “Backup JSON” (para retomar em outro dispositivo, via Importar) e “Imprimir/PDF”.</li>
+          </ul>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>9. Erros comuns que reduzem a utilidade do exercício</summary>
+          <ul class="lista">
+            <li><strong>Nota 8 em tudo.</strong> Se tudo é alto, nada é prioridade — o plano nasce vazio.</li>
+            <li><strong>Confundir conhecimento com competência.</strong> Ter feito um curso não equivale a ter demonstrado a competência em projeto.</li>
+            <li><strong>SWOT genérica.</strong> “Sou proativo / mercado competitivo” não ajuda. Amarre cada item a uma competência do catálogo e a um fato.</li>
+            <li><strong>Plano sem indicador.</strong> Sem medida de acompanhamento, não há como saber se a ação funcionou.</li>
+            <li><strong>Muitos focos ao mesmo tempo.</strong> Três competências por horizonte é um bom limite.</li>
+            <li><strong>Nunca revisar.</strong> Volte ao arquivo a cada 90 dias; compare notas antigas com novas.</li>
+          </ul>
+        </details>
+
+        <details class="ajuda-bloco">
+          <summary>10. Glossário rápido</summary>
+          <ul class="lista">
+            <li><strong>Unidade de competência:</strong> bloco amplo do framework (ex.: gestão de riscos).</li>
+            <li><strong>Elemento de competência:</strong> recorte dentro da unidade (ex.: identificar riscos); é o que você consegue observar em campo.</li>
+            <li><strong>Critério de desempenho / evidência:</strong> o que precisa ser feito e a prova de que foi feito.</li>
+            <li><strong>Gap:</strong> distância entre o nível atual (e a percepção externa) e o nível desejado.</li>
+            <li><strong>Feedback 360:</strong> percepção coletada de gestores, pares e equipe em torno do avaliado.</li>
+            <li><strong>Nível indicativo:</strong> no PMCD, o nível de competência que se espera em um determinado elemento — varia por organização e por cargo.</li>
+            <li><strong>Matriz cruzada (FO/WO/FA/WT):</strong> cruzamento dos quadrantes da SWOT que gera quatro tipos de estratégia: ofensiva, reorientação, defensiva e sobrevivência.</li>
+            <li><strong>Objetivo estratégico:</strong> resultado que se quer alcançar cruzando dois quadrantes, com prazo e indicador — diferente de ação, que é o que se faz.</li>
+            <li><strong>Competência-âncora:</strong> competência do catálogo que sustenta um objetivo; ajuda a verificar se o plano está ancorado em algo mensurável.</li>
+          </ul>
+        </details>
+      </div>
+    </div>
+
+    <div class="sticky-lado">
+      <div class="cartao">
+        <h3>Seu perfil</h3>
+        <p class="mudo" style="margin-bottom:.8rem">Opcional, mas útil no relatório exportado.</p>
+        <div class="grade">
+          <div>
+            <label class="campo" for="perfilNome">Nome</label>
+            <input type="text" id="perfilNome" data-meta="nome" placeholder="Como você quer ser identificado(a)">
+          </div>
+          <div>
+            <label class="campo" for="perfilCargo">Cargo / função atual</label>
+            <input type="text" id="perfilCargo" data-meta="cargo" placeholder="Ex.: gerente de projetos pleno">
+          </div>
+          <div>
+            <label class="campo" for="perfilOrg">Organização / setor</label>
+            <input type="text" id="perfilOrg" data-meta="org" placeholder="Ex.: empresa de energia, setor público">
+          </div>
+          <div>
+            <label class="campo" for="perfilObjetivo">Objetivo de carreira (próximos 3 anos)</label>
+            <textarea id="perfilObjetivo" data-meta="objetivo" style="min-height:70px" placeholder="Ex.: assumir a gerência de um programa de transformação digital"></textarea>
+          </div>
+        </div>
+      </div>
+      <div class="cartao">
+        <h3>Atalhos</h3>
+        <div class="linha-botoes">
+          <button class="botao sec pequeno" type="button" data-ir="mapeamento">1 · Mapeamento</button>
+          <button class="botao sec pequeno" type="button" data-ir="swot">2 · SWOT</button>
+          <button class="botao sec pequeno" type="button" data-ir="plano">3 · Plano de ação</button>
+          <button class="botao sec pequeno" type="button" data-ir="resumo">4 · Resumo</button>
+        </div>
+      </div>
+      <div class="cartao">
+        <h3>Fontes do catálogo</h3>
+        <p class="mudo" style="margin:0 0 .5rem"><strong>PMCD (16):</strong> PMI, <em>Project Manager Competency Development (PMCD) Framework</em> — Third Edition, 2017. Tabelas 3-1, 3-2 e Apêndice X3. Arquivo: <code>PMCD_Framework.pdf</code>.</p>
+        <p class="mudo" style="margin:0"><strong>Século XXI (16):</strong> PMI Talent Triangle; WEF <em>Future of Jobs 2025</em>; IPMA ICB4; pesquisa AI &amp; PM 2025; Panorama Gestão de Projetos Brasil (Artia); NR-1 e LGPD. Detalhes no guia, item 2-ter.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============================================================
+     ETAPA 1 — MAPEAMENTO DE COMPETÊNCIAS
+     ============================================================ -->
+<section class="passo" id="passo-mapeamento" role="tabpanel" aria-labelledby="aba-mapeamento">
+  <div class="cabeca-secao">
+    <div class="txt">
+      <p class="olho">Etapa 1 de 4</p>
+      <h2>Mapeamento de competências do gerente de projetos</h2>
+      <p class="lead">Atribua a <strong>sua nota (0–10)</strong> em cada competência, com uma <strong>observação que traga evidência</strong>. O catálogo tem <strong>32 competências</strong>: as <strong>16 do PMCD</strong> (10 de desempenho + 6 pessoais) e as <strong>16 do módulo século XXI</strong>, que o PMCD não cobre. Se já tiver feedback, registre ao lado as notas de <strong>pares</strong> e <strong>gestores</strong> — é a comparação que transforma autoavaliação em diagnóstico.</p>
+      <p class="mudo" style="margin:.5rem 0 0"><strong>Ordem sugerida:</strong> avalie primeiro o bloco PMCD (filtro “desempenho” e “pessoais”) e depois as complementares que forem decisivas para o seu próximo passo. Não é obrigatório avaliar as 32.</p>
+    </div>
+    <div class="linha-botoes nao-imprimir">
+      <button class="botao sec pequeno" type="button" id="btnExpandir">Expandir tudo</button>
+      <button class="botao sec pequeno" type="button" id="btnRecolher">Recolher tudo</button>
+    </div>
+  </div>
+
+  <div class="aviso dica">
+    <strong>Como pontuar sem se enganar:</strong> pergunte-se “em que projeto eu já demonstrei isso, com que autonomia e com qual resultado?”. Use a lista de <em>elementos</em> (ou <em>indicadores</em>, nas complementares) dentro de cada item como checklist. Nota 0–2: nunca fiz; 5–6: faço com apoio; 9–10: sou referência para outros. Deixe em branco o que você ainda não tem base para avaliar. Nas competências <span class="etiqueta novo">Séc. XXI</span>, a nota deve considerar prática real — usar IA num projeto, não apenas ter feito um curso sobre IA.
+  </div>
+
+  <div class="kpis" id="kpisMapeamento"></div>
+
+  <div class="linha-botoes nao-imprimir" style="margin-bottom:.9rem">
+    <div class="abas-h" role="tablist" aria-label="Filtrar por grupo">
+      <button type="button" data-filtro="todos" aria-selected="true">Todas (32)</button>
+      <button type="button" data-filtro="desempenho" aria-selected="false">PMCD · desempenho (10)</button>
+      <button type="button" data-filtro="pessoal" aria-selected="false">PMCD · pessoais (6)</button>
+      <button type="button" data-filtro="complementar" aria-selected="false">Século XXI (16)</button>
+      <button type="button" data-filtro="foco" aria-selected="false">Só focos</button>
+    </div>
+    <label class="mudo" style="display:flex;align-items:center;gap:.4rem;margin-left:auto">
+      <input type="checkbox" id="soAvaliadas" style="width:auto"> mostrar apenas avaliadas
+    </label>
+  </div>
+
+  <div id="listaCompetencias"></div>
+
+  <div class="cartao">
+    <h3>Como fechar esta etapa</h3>
+    <ul class="lista" style="margin-bottom:0">
+      <li>Marque <strong>no máximo 3 competências como foco</strong> — elas alimentarão a SWOT e o plano.</li>
+      <li>Se tiver feedback, use o campo de observação para registrar <em>o exemplo dado pela pessoa</em>, não só a nota.</li>
+      <li>Volte ao guia (item 3) sempre que estiver em dúvida sobre o significado de uma nota.</li>
+    </ul>
+  </div>
+
+  <div class="linha-botoes nao-imprimir">
+    <button class="botao teal" type="button" data-ir="swot">Ir para a SWOT →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     ETAPA 2 — SWOT PESSOAL
+     ============================================================ -->
+<section class="passo" id="passo-swot" role="tabpanel" aria-labelledby="aba-swot">
+  <div class="cabeca-secao">
+    <div class="txt">
+      <p class="olho">Etapa 2 de 4 · matriz + objetivos</p>
+      <h2>Análise SWOT pessoal e objetivos estratégicos</h2>
+      <p class="lead">Traduza o mapeamento em leitura estratégica de si mesmo(a). O objetivo é que cada quadrante nasça de <strong>dados que você já registrou</strong> — notas, evidências e feedback — e não de impressões soltas. Depois de preencher a matriz, vá ao bloco <strong>2.2</strong> e transforme os quadrantes em objetivos estratégicos.</p>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <strong>Amarre os quadrantes ao mapeamento:</strong> <em>Forças</em> = competências com nota alta e reconhecidas por terceiros; <em>Fraquezas</em> = notas baixas, gaps negativos ou competências-foco; <em>Oportunidades</em> e <em>Ameaças</em> = fatores do contexto (organização, mercado, tecnologia, rede), não características pessoais.
+  </div>
+
+  <div class="duas-col">
+    <div>
+      <div class="swot">
+        <div class="q f">
+          <h3><span class="letra">F</span> Forças <span class="etiqueta ok" style="margin-left:auto">interno · positivo</span></h3>
+          <p class="ajuda">Competências em que você tem evidência concreta de bom desempenho. Cite o projeto e o resultado.</p>
+          <label class="sr" for="swotForcas">Forças</label>
+          <textarea id="swotForcas" data-swot="forcas" placeholder="• Gestão de riscos (nota 8): conduzi análise qualitativa em 3 projetos; riscos críticos antecipados no projeto X.&#10;• Comunicação com patrocinador: relatórios semanais adotados como padrão pela área."></textarea>
+        </div>
+        <div class="q w">
+          <h3><span class="letra">W</span> Fraquezas <span class="etiqueta" style="margin-left:auto">interno · negativo</span></h3>
+          <p class="ajuda">Competências com nota baixa, gap negativo em relação ao feedback ou pouca prática. Seja específico.</p>
+          <label class="sr" for="swotFraquezas">Fraquezas</label>
+          <textarea id="swotFraquezas" data-swot="fraquezas" placeholder="• Gestão de custos (nota 3; gestor avaliou 2): nunca conduzi controle de valor agregado.&#10;• Liderança de equipes remotas: dificuldade em dar feedback corretivo."></textarea>
+        </div>
+        <div class="q o">
+          <h3><span class="letra">O</span> Oportunidades <span class="etiqueta des" style="margin-left:auto">externo · positivo</span></h3>
+          <p class="ajuda">O que o ambiente oferece: projetos, programas de formação, mentores, demandas do mercado.</p>
+          <label class="sr" for="swotOportunidades">Oportunidades</label>
+          <textarea id="swotOportunidades" data-swot="oportunidades" placeholder="• Projeto de migração de ERP em 2027 exigirá gestão de riscos e fornecedores.&#10;• PMO da empresa oferece mentoria e banco de lições aprendidas."></textarea>
+        </div>
+        <div class="q t">
+          <h3><span class="letra">T</span> Ameaças <span class="etiqueta foco" style="margin-left:auto">externo · negativo</span></h3>
+          <p class="ajuda">O que pode dificultar o desenvolvimento: falta de patrocínio, sobrecarga, mudanças de prioridade, tecnologia.</p>
+          <label class="sr" for="swotAmeacas">Ameaças</label>
+          <textarea id="swotAmeacas" data-swot="ameacas" placeholder="• Reestruturação pode reduzir orçamento de treinamento.&#10;• Alta carga de projetos operacionais consome tempo de desenvolvimento."></textarea>
+        </div>
+      </div>
+
+      <div class="cartao" style="margin-top:1rem">
+        <h3>Leitura cruzada (síntese)</h3>
+        <p class="mudo">Duas ou três frases que articulem os quadrantes — é daqui que saem as metas do plano de ação.</p>
+        <label class="sr" for="swotSintese">Síntese da análise</label>
+        <textarea id="swotSintese" data-swot="sintese" style="min-height:90px" placeholder="Ex.: Minha base técnica de escopo e cronograma é sólida (F), mas custos e comunicação executiva são pontos cegos (W). A migração de ERP (O) é a chance de praticar custos com um mentor do PMO (O), desde que eu negocie tempo protegido diante da sobrecarga atual (T)."></textarea>
+      </div>
+    </div>
+
+    <div class="sticky-lado">
+      <div class="cartao">
+        <h3>Seu mapeamento em números</h3>
+        <p class="mudo">Use estes dados para escrever as forças e fraquezas.</p>
+        <div id="apoioSwot"></div>
+      </div>
+      <div class="cartao">
+        <h3>Perguntas de apoio</h3>
+        <ul class="lista" style="margin-bottom:0">
+          <li>Qual competência de nota alta ainda <em>não</em> foi reconhecida por outras pessoas? Por que?</li>
+          <li>Qual nota baixa é falta de prática e qual é falta de interesse? Só a primeira vira plano.</li>
+          <li>Onde o feedback externo foi <strong>maior</strong> que sua autoavaliação? Isso é uma força subestimada.</li>
+          <li>Que oportunidade concreta existe nos próximos 6 meses para praticar sua maior lacuna?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <div class="cartao" id="blocoObjetivos" style="margin-top:1.1rem">
+    <div class="cabeca-secao">
+      <div class="txt">
+        <p class="olho">Etapa 2.2 · da matriz aos objetivos</p>
+        <h2>Objetivos estratégicos pela matriz cruzada (FO · WO · FA · WT)</h2>
+        <p class="lead">A SWOT só vira estratégia quando os quadrantes são <strong>cruzados</strong>. Aqui você investiga o que apontou e escreve <strong>objetivos estratégicos</strong> para cada uma das quatro combinações. São esses objetivos que o plano de ação deverá atender — cada ação do plano terá de estar vinculada a um deles.</p>
+      </div>
+    </div>
+
+    <div class="aviso">
+      <strong>Como escrever cada objetivo:</strong> use a estrutura <em>“Aproveitar [força/oportunidade] para [resultado], até [prazo], medido por [indicador]”</em>. Um objetivo é diferente de uma ação: “melhorar minha comunicação executiva até julho” é objetivo; “apresentar o status do projeto em 3 comitês” é ação.
+    </div>
+
+    <details class="ajuda-bloco">
+      <summary>Ver insumos do mapeamento e da SWOT para escrever os objetivos</summary>
+      <div id="insumosObjetivos"></div>
+    </details>
+
+    <div class="kpis" id="kpisObjetivos"></div>
+    <div id="matrizObjetivos"></div>
+
+    <div class="aviso atencao" style="margin-top:.4rem">
+      <strong>Regra de passagem para o plano:</strong> o plano de ação só é liberado quando as quatro estratégias tiverem pelo menos um objetivo escrito. Isso evita o padrão mais comum (e inútil) de “fazer um curso” sem saber qual objetivo de carreira aquilo atende.
+    </div>
+  </div>
+
+  <div class="linha-botoes nao-imprimir" style="margin-top:1rem">
+    <button class="botao sec" type="button" data-ir="mapeamento">← Voltar ao mapeamento</button>
+    <button class="botao teal" type="button" data-ir="plano">Ir para o plano de ação →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     ETAPA 3 — PLANO DE AÇÃO
+     ============================================================ -->
+<section class="passo" id="passo-plano" role="tabpanel" aria-labelledby="aba-plano">
+  <div class="cabeca-secao">
+    <div class="txt">
+      <p class="olho">Etapa 3 de 4</p>
+      <h2>Plano de ação em três horizontes</h2>
+      <p class="lead">Cada item recebe <strong>um objetivo estratégico</strong> (definido na etapa 2.2), <strong>uma competência do catálogo</strong>, uma <strong>meta mensurável</strong>, uma <strong>ação concreta</strong>, um <strong>prazo</strong> e um <strong>indicador de acompanhamento</strong>. A estrutura segue a lógica do plano de desenvolvimento do próprio PMCD — atividade, nível a atingir, data-alvo e responsável pela avaliação — acrescida do vínculo explícito com a estratégia.</p>
+    </div>
+  </div>
+
+  <div class="aviso">
+    <strong>Regra de alinhamento:</strong> toda ação precisa responder a <em>um objetivo da matriz SWOT</em> e a <em>uma competência do catálogo</em>. Se a ação não se conecta a nenhum dos dois, provavelmente é desejo — não plano. <strong>Regra dos três:</strong> até 3 ações por horizonte. Curto prazo (até 3 meses) = experimentar e criar hábito; médio prazo (3 a 12 meses) = consolidar em projetos reais; longo prazo (1 a 3 anos) = posicionamento de carreira e amplitude de responsabilidade.
+  </div>
+
+  <div id="pendenciaPlano"></div>
+  <div class="kpis" id="kpisPlano"></div>
+
+  <div class="abas-h" role="tablist" aria-label="Horizontes do plano">
+    <button type="button" data-horizonte="curto" aria-selected="true">Curto prazo · até 3 meses</button>
+    <button type="button" data-horizonte="medio" aria-selected="false">Médio prazo · 3–12 meses</button>
+    <button type="button" data-horizonte="longo" aria-selected="false">Longo prazo · 1–3 anos</button>
+  </div>
+
+  <div id="horizontes"></div>
+
+  <div class="linha-botoes nao-imprimir" style="margin-top:.8rem">
+    <button class="botao sec" type="button" data-ir="swot">← Voltar à SWOT</button>
+    <button class="botao teal" type="button" data-ir="resumo">Ver resumo e exportar →</button>
+  </div>
+</section>
+
+<!-- ============================================================
+     ETAPA 4 — RESUMO E EXPORTAÇÃO
+     ============================================================ -->
+<section class="passo" id="passo-resumo" role="tabpanel" aria-labelledby="aba-resumo">
+  <div class="cabeca-secao">
+    <div class="txt">
+      <p class="olho">Etapa 4 de 4</p>
+      <h2>Resumo, comparação e exportação</h2>
+      <p class="lead">Visualize o perfil por competência, compare <strong>autoavaliação × pares × gestores</strong>, identifique as maiores lacunas e leve o resultado com você.</p>
+    </div>
+    <div class="linha-botoes nao-imprimir">
+      <button class="botao sec pequeno" type="button" id="btnImprimir">Imprimir / PDF</button>
+      <button class="botao sec pequeno" type="button" id="btnTxt">Relatório em texto</button>
+      <button class="botao sec pequeno" type="button" id="btnCsv">Planilha (CSV)</button>
+      <button class="botao sec pequeno" type="button" id="btnJson">Backup (JSON)</button>
+    </div>
+  </div>
+
+  <div class="kpis" id="kpisResumo"></div>
+
+  <div class="cartao">
+    <h3>Perfil por competência (0–10)</h3>
+    <div class="legenda">
+      <span><i class="chave auto"></i> Autoavaliação</span>
+      <span><i class="chave par"></i> Pares</span>
+      <span><i class="chave ges"></i> Gestores</span>
+      <span class="mudo">Barras tracejadas = campo não preenchido</span>
+    </div>
+    <div class="linha-botoes nao-imprimir" style="margin-bottom:.7rem">
+      <label class="mudo" style="display:flex;align-items:center;gap:.4rem">Mostrar no gráfico
+        <select id="grupoGrafico" style="width:auto;padding:.3rem .5rem;font-size:.82rem">
+          <option value="todos">Todas as competências (32)</option>
+          <option value="desempenho">PMCD · desempenho (10)</option>
+          <option value="pessoal">PMCD · pessoais (6)</option>
+          <option value="complementar">Século XXI (16)</option>
+          <option value="foco">Somente focos</option>
+        </select>
+      </label>
+    </div>
+    <div class="grafico" id="grafico"></div>
+    <div class="eixo"><span>0</span><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span></div>
+  </div>
+
+  <div class="cartao">
+    <div class="cabeca-secao" style="margin-bottom:.6rem">
+      <div>
+        <h3 style="margin-bottom:.2rem">Tabela comparativa</h3>
+        <p class="mudo" style="margin:0">Gap = autoavaliação − média externa. Positivo indica que você se avalia acima da percepção de terceiros.</p>
+      </div>
+      <label class="mudo nao-imprimir" style="display:flex;gap:.4rem;align-items:center">
+        Ordenar por
+        <select id="ordenacao" style="width:auto;padding:.35rem .5rem;font-size:.82rem">
+          <option value="catalogo">Ordem do catálogo</option>
+          <option value="auto-desc">Maior autoavaliação</option>
+          <option value="auto-asc">Menor autoavaliação</option>
+          <option value="gap-desc">Maior gap (superestimação)</option>
+          <option value="gap-asc">Maior gap negativo</option>
+        </select>
+      </label>
+    </div>
+    <div class="rolagem"><table class="tabela" id="tabelaResumo">
+      <thead><tr>
+        <th>Competência</th><th>Grupo</th><th style="text-align:right">Auto</th><th style="text-align:right">Par</th>
+        <th style="text-align:right">Gestor</th><th style="text-align:right">Média ext.</th><th style="text-align:right">Gap</th><th>Foco</th>
+      </tr></thead>
+      <tbody></tbody>
+    </table></div>
+  </div>
+
+  <div class="cartao" id="cartaoConsistencia">
+    <div class="cabeca-secao" style="margin-bottom:.5rem">
+      <div>
+        <h3 style="margin-bottom:.2rem">Matriz de consistência: SWOT → objetivos → ações → competências</h3>
+        <p class="mudo" style="margin:0">Verifica se a estratégia que você escreveu virou plano e se o plano está ancorado no catálogo. Objetivo sem ação é intenção; ação sem objetivo é dispersão.</p>
+      </div>
+    </div>
+    <div id="matrizConsistencia"></div>
+  </div>
+
+  <div class="grade g2">
+    <div class="cartao">
+      <h3>Leitura rápida dos resultados</h3>
+      <div id="diagnostico"></div>
+    </div>
+    <div class="cartao">
+      <h3>SWOT e síntese</h3>
+      <div id="resumoSwot"></div>
+    </div>
+  </div>
+
+  <div class="cartao">
+    <div class="cabeca-secao" style="margin-bottom:.5rem">
+      <h3 style="margin:0">Exportar, copiar e retomar</h3>
+    </div>
+    <div class="linha-botoes" style="margin-bottom:.8rem">
+      <button class="botao" type="button" id="btnGerarTxt">Gerar relatório completo</button>
+      <button class="botao sec" type="button" id="btnCopiar">Copiar relatório</button>
+      <button class="botao sec" type="button" id="btnBaixarTxt">Baixar .txt</button>
+      <button class="botao sec" type="button" id="btnBaixarJson">Baixar backup .json</button>
+      <label class="botao sec" for="inputImportar" style="cursor:pointer">Importar backup</label>
+      <input type="file" id="inputImportar" accept=".json,application/json" class="sr">
+      <button class="botao perigo pequeno" type="button" id="btnApagar" style="margin-left:auto">Apagar todos os dados</button>
+    </div>
+    <label class="campo" for="saidaTexto">Conteúdo gerado (edite livremente antes de copiar)</label>
+    <textarea id="saidaTexto" style="min-height:280px;font-family:var(--mono);font-size:.78rem" placeholder="Clique em “Gerar relatório completo” para montar aqui o documento com perfil, mapeamento, SWOT, plano de ação e respostas de reflexão crítica."></textarea>
+  </div>
+
+  <div class="cartao">
+    <h3>Como usar este resultado</h3>
+    <ul class="lista" style="margin-bottom:0">
+      <li><strong>Com seu gestor:</strong> leve as três maiores lacunas <em>e</em> os objetivos que você escreveu na matriz SWOT; peça que ele avalie se os objetivos são coerentes com o que o time espera de você.</li>
+      <li><strong>Antes de exportar:</strong> resolva as pendências da matriz de consistência (objetivo sem ação, ação sem vínculo, competência-foco sem plano).</li>
+      <li><strong>Com o PMO/RH:</strong> use a tabela comparativa como insumo para pedir mentoria, sombra em projeto complexo ou treinamento específico.</li>
+      <li><strong>Para você:</strong> salve o backup JSON hoje e reabra em 90 dias com o mesmo instrumento — a comparação entre duas medições vale mais que qualquer nota isolada.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================================================
+     ETAPA 5 — PENSAMENTO CRÍTICO
+     ============================================================ -->
+<section class="passo" id="passo-critico" role="tabpanel" aria-labelledby="aba-critico">
+  <div class="cabeca-secao">
+    <div class="txt">
+      <p class="olho">Parte obrigatória da atividade</p>
+      <h2>Pensamento crítico sobre a ferramenta</h2>
+      <p class="lead">A ferramenta organiza a reflexão, mas não a substitui. Estas perguntas existem para que você avalie <strong>os limites do instrumento</strong> e o que ele deixa de fora. Discuta em duplas ou pequenos grupos e registre suas conclusões abaixo.</p>
+    </div>
+    <div class="linha-botoes nao-imprimir">
+      <button class="botao sec pequeno" type="button" id="btnImprimirCritico">Imprimir esta parte</button>
+    </div>
+  </div>
+
+  <div class="aviso atencao">
+    <strong>Antes de responder:</strong> a autoavaliação é o método de menor rigor no próprio PMCD Framework. O documento alerta que indivíduos avaliam as próprias habilidades de forma inconsistente — alguns se conhecem bem, outros não; alguns se cobram em padrão tão alto que subavaliam a própria competência. O próprio framework recomenda compensar isso com avaliação de pares ou gestores. Este é o ponto de partida do debate.
+  </div>
+
+  <div id="blocosCriticos"></div>
+
+  <div class="cartao">
+    <h3>Síntese do grupo</h3>
+    <p class="mudo">O que vocês concluíram sobre o uso — e os limites — de instrumentos de autoavaliação na gestão de carreira em projetos?</p>
+    <label class="sr" for="sinteseCritica">Síntese do grupo</label>
+    <textarea id="sinteseCritica" data-critico="sinteseGeral" style="min-height:130px" placeholder="Escreva a conclusão coletiva, indicando em que situações vocês usariam a ferramenta e em quais buscariam outros recursos."></textarea>
+  </div>
+
+  <div class="cartao">
+    <h3>Como complementar esta ferramenta (checklist de evidências)</h3>
+    <p class="mudo">Competência declarada ≠ competência comprovada. Para cada foco do seu plano, identifique a evidência que provará avanço:</p>
+    <div id="checklistEvidencias"></div>
+  </div>
+
+  <div class="linha-botoes nao-imprimir">
+    <button class="botao sec" type="button" data-ir="resumo">← Voltar ao resumo</button>
+    <button class="botao teal" type="button" data-ir="inicio">Voltar ao início</button>
+  </div>
+</section>
+
+<div class="rodape">
+  <p><strong>Planejador de Desenvolvimento de Carreira do Gerente de Projetos</strong> · arquivo HTML único, sem dependências externas · dados armazenados apenas no navegador (localStorage).</p>
+  <p>Catálogo de competências extraído de: Project Management Institute, <em>Project Manager Competency Development (PMCD) Framework</em>, Third Edition, 2017 — Tabelas 3-1 e 3-2 e Apêndice X3 (competências do gerente de projetos). Competências de gerente de programas e de portfólio não incluídas. Material didático para a disciplina Competências do Gerente de Projeto — uso educacional; PMBOK, PMP, PMCD e PMI são marcas do Project Management Institute.</p>
+  <p><strong>Módulo século XXI — fontes consultadas:</strong>
+    PMI Talent Triangle (<a href="https://www.pmi.org/certifications/certification-resources/maintain/talent-triangle" target="_blank" rel="noopener">pmi.org</a>) ·
+    WEF, <em>Future of Jobs Report 2025</em> (<a href="https://reports.weforum.org/docs/WEF_Future_of_Jobs_Report_2025.pdf" target="_blank" rel="noopener">reports.weforum.org</a>) ·
+    IPMA ICB4 (<a href="https://ipma.world/ipma-standards-development-programme/" target="_blank" rel="noopener">ipma.world</a>) ·
+    <em>AI &amp; Project Management 2025</em> (<a href="https://www.pmairevolution.com/reports/2025_AIPM_Research.pdf" target="_blank" rel="noopener">pmairevolution.com</a>) ·
+    Panorama Gestão de Projetos Brasil — Artia (<a href="https://artia.com/wp-content/uploads/2025/01/Panorama-Gestao-de-Projetos-Brasil-2024-2025-1.pdf" target="_blank" rel="noopener">artia.com</a>) ·
+    NR-1 / Portaria MTE 1.419/2024 (<a href="https://www.gov.br/trabalho-e-emprego/pt-br" target="_blank" rel="noopener">gov.br/trabalho-e-emprego</a>) ·
+    LGPD — Lei 13.709/2018 (<a href="https://www.planalto.gov.br/ccivil_03/_ato2015-2018/2018/lei/l13709.htm" target="_blank" rel="noopener">planalto.gov.br</a>).</p>
+</div>
+</main>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ================================================================
+   PLANEJADOR DE CARREIRA — GERENTE DE PROJETOS (PMCD / PMI)
+   Arquivo único, JavaScript puro. Organização:
+   1) Catálogo de competências
+   2) Estado, persistência e utilidades
+   3) Navegação
+   4) Etapa 1 — mapeamento
+   5) Etapa 2 — SWOT
+   6) Etapa 3 — plano de ação
+   7) Etapa 4 — resumo, diagnóstico e exportação
+   8) Etapa 5 — pensamento crítico
+   9) Inicialização
+   ================================================================ */
+'use strict';
+
+/* ================================================================
+   1) CATÁLOGO — extraído do PMCD Framework (PMI, 3ª ed.)
+   Grupo "desempenho": X3.1.1 a X3.1.10 (unidades = áreas de conhecimento)
+   Grupo "pessoal":    X3.2.1 a X3.2.6 (Tabela 3-2 / X3.2)
+   "elementos": elementos de competência do framework (nome traduzido,
+   mantendo o termo original em inglês entre parênteses quando útil).
+   ================================================================ */
+const CATALOGO = [
+  /* ---------- Competências de desempenho ---------- */
+  { id:'d1', gru:'desempenho', ref:'X3.1.1', nome:'Integração do projeto',
+    en:'Project Integration Management',
+    desc:'Identificar, definir, combinar, unificar e coordenar os processos e atividades de gerenciamento do projeto.',
+    elementos:['Desenvolver o termo de abertura (Develop Project Charter)','Desenvolver o plano de gerenciamento do projeto','Orientar e gerenciar a execução do trabalho','Monitorar e controlar o trabalho do projeto','Realizar o controle integrado de mudanças','Encerrar o projeto ou fase'] },
+  { id:'d2', gru:'desempenho', ref:'X3.1.2', nome:'Escopo do projeto',
+    en:'Project Scope Management',
+    desc:'Garantir que o projeto inclua todo o trabalho necessário — e somente o necessário — para ser concluído com sucesso.',
+    elementos:['Planejar o gerenciamento do escopo','Coletar os requisitos','Definir o escopo','Criar a EAP/WBS','Validar o escopo','Controlar o escopo'] },
+  { id:'d3', gru:'desempenho', ref:'X3.1.3', nome:'Prazo do projeto',
+    en:'Project Time Management',
+    desc:'Gerenciar a conclusão tempestiva do projeto.',
+    elementos:['Planejar o gerenciamento do cronograma','Definir as atividades','Sequenciar as atividades','Estimar os recursos das atividades','Estimar as durações das atividades','Desenvolver o cronograma','Controlar o cronograma'] },
+  { id:'d4', gru:'desempenho', ref:'X3.1.4', nome:'Custos do projeto',
+    en:'Project Cost Management',
+    desc:'Planejar, estimar, orçar, financiar, gerir e controlar custos para concluir o projeto dentro do orçamento aprovado.',
+    elementos:['Planejar o gerenciamento dos custos','Estimar os custos','Determinar o orçamento','Controlar os custos'] },
+  { id:'d5', gru:'desempenho', ref:'X3.1.5', nome:'Qualidade do projeto',
+    en:'Project Quality Management',
+    desc:'Determinar políticas, objetivos e responsabilidades de qualidade para que o projeto atenda às necessidades para as quais foi empreendido.',
+    elementos:['Planejar o gerenciamento da qualidade','Realizar a garantia da qualidade','Controlar a qualidade'] },
+  { id:'d6', gru:'desempenho', ref:'X3.1.6', nome:'Recursos humanos do projeto',
+    en:'Project Human Resource Management',
+    desc:'Organizar, gerenciar e conduzir a equipe do projeto.',
+    elementos:['Planejar o gerenciamento dos recursos humanos','Mobilizar a equipe do projeto','Desenvolver a equipe do projeto','Gerenciar a equipe do projeto'] },
+  { id:'d7', gru:'desempenho', ref:'X3.1.7', nome:'Comunicações do projeto',
+    en:'Project Communications Management',
+    desc:'Planejar, gerenciar e controlar a informação do projeto para atender às necessidades de informação das partes interessadas.',
+    elementos:['Planejar o gerenciamento das comunicações','Gerenciar as comunicações','Controlar as comunicações'] },
+  { id:'d8', gru:'desempenho', ref:'X3.1.8', nome:'Riscos do projeto',
+    en:'Project Risk Management',
+    desc:'Conduzir o planejamento, a identificação, a análise, o planejamento de respostas e o controle de riscos do projeto.',
+    elementos:['Planejar o gerenciamento dos riscos','Identificar os riscos','Realizar a análise qualitativa e quantitativa dos riscos','Planejar as respostas aos riscos','Controlar os riscos'] },
+  { id:'d9', gru:'desempenho', ref:'X3.1.9', nome:'Aquisições do projeto',
+    en:'Project Procurement Management',
+    desc:'Comprar ou adquirir produtos, serviços ou resultados externos ao projeto, e gerenciar os contratos resultantes.',
+    elementos:['Planejar o gerenciamento das aquisições','Conduzir as aquisições','Controlar as aquisições','Encerrar as aquisições'] },
+  { id:'d10', gru:'desempenho', ref:'X3.1.10', nome:'Partes interessadas do projeto',
+    en:'Project Stakeholder Management',
+    desc:'Identificar as pessoas, grupos ou organizações que podem afetar ou ser afetados pelo projeto e gerenciar expectativas e engajamento.',
+    elementos:['Identificar as partes interessadas','Planejar o engajamento das partes interessadas','Gerenciar o engajamento das partes interessadas','Controlar o engajamento das partes interessadas'] },
+
+  /* ---------- Competências pessoais ---------- */
+  { id:'p1', gru:'pessoal', ref:'X3.2.1', nome:'Comunicação',
+    en:'Communicating',
+    desc:'Trocar de forma efetiva informações oportunas, precisas, adequadas e relevantes com as partes interessadas, usando métodos apropriados.',
+    elementos:['Ouve, entende e responde ativamente às partes interessadas','Mantém as linhas de comunicação','Assegura a qualidade da informação','Adapta a comunicação ao público'] },
+  { id:'p2', gru:'pessoal', ref:'X3.2.2', nome:'Liderança',
+    en:'Leading',
+    desc:'Orientar, inspirar e motivar membros da equipe e demais partes interessadas para superar questões e alcançar os objetivos do projeto.',
+    elementos:['Cria um ambiente de equipe que favorece alto desempenho','Constrói e mantém relacionamentos efetivos','Motiva e orienta (mentoring) os membros da equipe','Assume responsabilidade pela entrega do projeto','Usa habilidades de influência quando necessário'] },
+  { id:'p3', gru:'pessoal', ref:'X3.2.3', nome:'Gestão (administração do projeto)',
+    en:'Managing',
+    desc:'Administrar efetivamente o projeto por meio da mobilização e uso de recursos humanos, financeiros, materiais, intelectuais e intangíveis.',
+    elementos:['Constrói e mantém a equipe do projeto','Planeja e gerencia o sucesso do projeto de forma organizada','Resolve conflitos envolvendo equipe ou partes interessadas'] },
+  { id:'p4', gru:'pessoal', ref:'X3.2.4', nome:'Capacidade cognitiva',
+    en:'Cognitive Ability',
+    desc:'Aplicar profundidade adequada de percepção, discernimento e julgamento para conduzir o projeto em ambiente mutável.',
+    elementos:['Adota uma visão holística do projeto','Resolve questões e problemas de forma efetiva','Usa ferramentas e técnicas adequadas de gerenciamento de projetos','Busca oportunidades para melhorar o resultado do projeto'] },
+  { id:'p5', gru:'pessoal', ref:'X3.2.5', nome:'Efetividade',
+    en:'Effectiveness',
+    desc:'Produzir os resultados desejados usando recursos, ferramentas e técnicas apropriados em todas as atividades do projeto.',
+    elementos:['Resolve os problemas do projeto','Mantém o envolvimento, a motivação e o apoio das partes interessadas','Muda no ritmo exigido pelas necessidades do projeto','Usa assertividade quando necessário'] },
+  { id:'p6', gru:'pessoal', ref:'X3.2.6', nome:'Profissionalismo',
+    en:'Professionalism',
+    desc:'Conformidade com comportamento ético pautado por responsabilidade, respeito, imparcialidade e honestidade na prática do gerenciamento de projetos.',
+    elementos:['Demonstra compromisso com o projeto','Atua com integridade','Lida com adversidades pessoais e da equipe de forma adequada','Gerencia uma força de trabalho diversa','Resolve questões individuais e organizacionais com objetividade'] },
+
+  /* ---------- Competências complementares (não cobertas pelo PMCD) ----------
+     Módulo de pesquisa: o PMCD Framework (2017) descreve competências de
+     desempenho (áreas do PMBOK 5) e pessoais, mas não cobre temas que se
+     tornaram centrais depois: IA e dados, ESG, acumen de negócios, gestão de
+     mudanças, negociação, liderança híbrida/intercultural, riscos psicossociais.
+     Referências: PMI Talent Triangle; WEF Future of Jobs 2025; IPMA ICB4;
+     pesquisa AI & Project Management 2025 (Nieto-Rodriguez & Viana Vargas);
+     Panorama Gestão de Projetos Brasil (Artia); NR-1 (Portaria MTE 1.419/2024). */
+  { id:'x1', gru:'complementar', sub:'Negócio e valor', ref:'PMI · Business Acumen',
+    nome:'Acumen de negócios e visão estratégica', en:'Business Acumen',
+    desc:'Entender o negócio, as finanças, o mercado e a estratégia da organização para que as decisões do projeto façam sentido econômico.',
+    elementos:['Ler indicadores financeiros e de negócio (margem, caixa, retorno) e usá-los nas decisões','Explicar como o projeto se conecta à estratégia e às metas da organização','Avaliar trade-offs de escopo, prazo e custo pelo impacto no valor','Conhecer o setor, os clientes e os concorrentes'],
+    fonte:'PMI Talent Triangle (Business Acumen); Pulse of the Profession' },
+  { id:'x2', gru:'complementar', sub:'Negócio e valor', ref:'PMI · Value Delivery',
+    nome:'Gestão de benefícios e entrega de valor', en:'Benefits realization',
+    desc:'Garantir que a entrega produza os benefícios esperados — e não apenas o produto no prazo.',
+    elementos:['Definir benefícios e métricas de valor com o patrocinador','Planejar a realização de benefícios depois da entrega','Medir adoção e uso do que foi entregue','Reorientar ou encerrar o projeto quando o benefício deixa de fazer sentido'],
+    fonte:'PMI (PMBOK 7 / entrega de valor)' },
+  { id:'x3', gru:'complementar', sub:'Negócio e valor', ref:'PMI · Ways of Working',
+    nome:'Escolha e adaptação da abordagem de entrega', en:'Ways of Working',
+    desc:'Selecionar e combinar abordagens (preditiva, ágil, híbrida) conforme incerteza, criticidade e contexto.',
+    elementos:['Diagnosticar o contexto e escolher a abordagem de entrega','Combinar práticas preditivas e ágeis de forma coerente','Adaptar cadência, papéis e artefatos ao time e ao cliente','Perceber quando é hora de mudar de abordagem'],
+    fonte:'PMI Talent Triangle (Ways of Working); Disciplined Agile' },
+  { id:'x4', gru:'complementar', sub:'Negócio e valor', ref:'PMI · Change Mgmt',
+    nome:'Gestão de mudanças e adoção organizacional', en:'Change management',
+    desc:'Conduzir as pessoas e áreas afetadas para que a entrega seja realmente adotada.',
+    elementos:['Mapear impactos e públicos afetados pela mudança','Planejar comunicação, treinamento e suporte à adoção','Trabalhar resistências com escuta e dados','Medir adoção e sustentação após o go-live'],
+    fonte:'PMI Power Skills; Panorama Gestão de Projetos Brasil (Artia)' },
+
+  { id:'x5', gru:'complementar', sub:'Pessoas e cultura', ref:'IPMA ICB4 · People',
+    nome:'Negociação e influência sem autoridade', en:'Negotiation',
+    desc:'Obter recursos, prazos e prioridades em estruturas matriciais, sem hierarquia formal.',
+    elementos:['Preparar a negociação com fatos, alternativas e limites','Negociar prioridades e alocação com gestores funcionais','Influenciar decisões de patrocinadores e comitês','Formalizar acordos e acompanhar compromissos assumidos'],
+    fonte:'IPMA ICB4 (People); pesquisas brasileiras sobre conflitos e negociação' },
+  { id:'x6', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025 · IPMA',
+    nome:'Liderança de equipes híbridas e comunicação intercultural', en:'Hybrid & cross-cultural leadership',
+    desc:'Liderar times distribuídos, remotos e culturalmente diversos, com acordos de trabalho claros.',
+    elementos:['Definir acordos de trabalho remoto/híbrido e horários de sobreposição','Conduzir rituais e reuniões eficazes em ambiente distribuído','Adaptar a comunicação a diferenças culturais e de fuso','Incluir quem está remoto nas decisões'],
+    fonte:'WEF Future of Jobs 2025; IPMA ICB4 (Culture and values)' },
+  { id:'x7', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025 · PMAI',
+    nome:'Inteligência emocional, empatia e escuta ativa', en:'Emotional intelligence',
+    desc:'Reconhecer e regular emoções próprias e alheias para manter confiança e desempenho sob pressão.',
+    elementos:['Identificar sinais de sobrecarga e desgaste na equipe','Escutar sem interromper e validar perspectivas','Regular a própria reação em situações de crise','Dar e receber feedback difícil com respeito'],
+    fonte:'WEF Future of Jobs 2025; pesquisa AI & PM 2025 (empatia/IE)' },
+  { id:'x8', gru:'complementar', sub:'Pessoas e cultura', ref:'Brasil · NR-1',
+    nome:'Segurança psicológica, saúde mental e riscos psicossociais', en:'Psychosocial risk management',
+    desc:'Criar ambiente seguro para falar e errar e gerir fatores psicossociais (sobrecarga, assédio, clareza de papéis). No Brasil, a atualização da NR-1 tornou esse gerenciamento obrigatório no PGR.',
+    elementos:['Identificar fatores de risco psicossocial no projeto (sobrecarga, conflitos, clareza de papéis)','Aplicar escuta segura e encaminhar situações de assédio','Ajustar carga de trabalho e prioridades para evitar adoecimento','Registrar ações no PGR/plano de ação da organização'],
+    fonte:'NR-1 (Portaria MTE 1.419/2024, vigência 2025); Lei 14.831/2024' },
+  { id:'x9', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025 · 2ª',
+    nome:'Resiliência, adaptabilidade e tolerância à ambiguidade', en:'Resilience & agility',
+    desc:'Sustentar a entrega e o equilíbrio da equipe diante de mudanças, crises e informação incompleta.',
+    elementos:['Decidir com informação incompleta e revisar decisões','Recompor o plano após perdas e imprevistos','Manter a equipe estável em crises e mudanças de prioridade','Aprender com falhas e institucionalizar o aprendizado'],
+    fonte:'WEF Future of Jobs 2025 (2ª competência central)' },
+  { id:'x10', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025 · 1ª',
+    nome:'Pensamento crítico e julgamento profissional', en:'Critical thinking',
+    desc:'Questionar premissas, avaliar evidências — inclusive saídas de IA — e decidir com justificativa defensável.',
+    elementos:['Separar fato, hipótese e opinião em relatórios e reuniões','Verificar qualidade de dados e previsões antes de decidir','Reconhecer vieses próprios e do time (ancoragem, confirmação)','Documentar a lógica das decisões relevantes'],
+    fonte:'WEF Future of Jobs 2025 (1ª); pesquisa AI & PM 2025' },
+  { id:'x11', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025',
+    nome:'Criatividade, inovação e melhoria contínua', en:'Creative thinking',
+    desc:'Gerar alternativas e redesenhar soluções quando o caminho atual não entrega resultado.',
+    elementos:['Facilitar ideação e prototipagem rápida','Testar hipóteses com experimentos pequenos','Redesenhar processos e entregas com o time','Reconhecer e escalar melhorias vindas da equipe'],
+    fonte:'WEF Future of Jobs 2025 (entre as 4 competências centrais)' },
+  { id:'x12', gru:'complementar', sub:'Pessoas e cultura', ref:'WEF 2025',
+    nome:'Curiosidade e aprendizagem contínua', en:'Lifelong learning',
+    desc:'Manter-se atualizado em métodos, tecnologia e setor, transformando aprendizado em prática no projeto.',
+    elementos:['Manter rotina de estudo aplicada a um projeto real','Transformar aprendizado em mudança de prática em até 90 dias','Ensinar o que aprende (mentoria, comunidade interna)','Acompanhar tendências do setor e da profissão'],
+    fonte:'WEF Future of Jobs 2025 (59% central; 79% em crescimento)' },
+
+  { id:'x13', gru:'complementar', sub:'Dados, tecnologia e ética', ref:'PMAI 2025 · 58%',
+    nome:'Letramento em IA e uso de IA generativa no projeto', en:'AI literacy & prompt engineering',
+    desc:'Usar IA para acelerar análise, planejamento e relatórios, com inputs claros, verificação e limites definidos.',
+    elementos:['Escrever prompts com contexto, papel e formato desejado','Usar IA em planejamento, riscos, atas e relatórios do projeto','Verificar factualmente as saídas e assumir a responsabilidade final','Definir com o time e a organização onde a IA pode e não pode ser usada'],
+    fonte:'Pesquisa AI & Project Management 2025; WEF (IA e big data: maior crescimento até 2030)' },
+  { id:'x14', gru:'complementar', sub:'Dados, tecnologia e ética', ref:'PMAI 2025 · 63%',
+    nome:'Análise e interpretação de dados', en:'Data analytics',
+    desc:'Ler, questionar e comunicar dados do projeto para decidir melhor e antecipar tendências.',
+    elementos:['Construir e ler indicadores de prazo, custo e qualidade','Interpretar tendências, variações e limites da amostra','Distinguir sinal de ruído antes de agir','Comunicar dados com honestidade, inclusive más notícias'],
+    fonte:'Pesquisa AI & Project Management 2025 (competência mais citada); WEF' },
+  { id:'x15', gru:'complementar', sub:'Dados, tecnologia e ética', ref:'PMAI 2025 · 44%',
+    nome:'Ética, governança de IA, privacidade e LGPD', en:'AI ethics & data governance',
+    desc:'Decidir sobre uso responsável de dados e IA, protegendo pessoas, clientes e a organização.',
+    elementos:['Aplicar princípios de LGPD no tratamento de dados do projeto','Avaliar riscos de viés, confidencialidade e propriedade intelectual','Definir revisão humana obrigatória em decisões sensíveis','Documentar o uso de IA e responder pelos resultados'],
+    fonte:'Pesquisa AI & PM 2025 (ética/legal 44%); LGPD (Lei 13.709/2018)' },
+  { id:'x16', gru:'complementar', sub:'Dados, tecnologia e ética', ref:'IPMA ICB4 Sust. · WEF',
+    nome:'Sustentabilidade, ESG e gestão de impactos', en:'Sustainability & ESG',
+    desc:'Incorporar critérios ambientais, sociais e de governança nas decisões e entregas do projeto.',
+    elementos:['Levantar requisitos e riscos ESG aplicáveis ao projeto','Avaliar impacto ambiental e social de entregas e fornecedores','Reportar indicadores ESG do projeto','Antecipar exigências regulatórias e de clientes'],
+    fonte:'IPMA ICB4 (Sustainable PM); WEF 2025 (environmental stewardship)' }
+];
+const POR_ID = Object.fromEntries(CATALOGO.map(c=>[c.id,c]));
+const HORIZONTES = [
+  { id:'curto', nome:'Curto prazo', janela:'até 3 meses',  dica:'Experimentar, criar hábito e gerar primeiras evidências. Ações pequenas o suficiente para caber na sua rotina.' },
+  { id:'medio', nome:'Médio prazo', janela:'3 a 12 meses',  dica:'Consolidar a competência em projetos reais, com responsabilidade crescente e feedback formal.' },
+  { id:'longo', nome:'Longo prazo', janela:'1 a 3 anos',    dica:'Posicionamento de carreira: amplitude de responsabilidade, credenciais, mentoria de outros, visão estratégica.' }
+];
+
+/* ================================================================
+   2) ESTADO, PERSISTÊNCIA E UTILIDADES
+   ================================================================ */
+const CHAVE = 'planejador_carreira_pmcd_v1';
+/* Acesso tolerante ao localStorage: em iframes restritos (origem opaca) o simples
+   acesso à propriedade lança SecurityError. Nesse caso a ferramenta continua
+   funcionando em memória, e o usuário é avisado a exportar o backup. */
+const LS = (()=>{
+  try{
+    const t='__teste_pmcd__';
+    window.localStorage.setItem(t,'1'); window.localStorage.removeItem(t);
+    return window.localStorage;
+  }catch(e){ return null; }
+})();
+
+function estadoPadrao(){
+  const comps = {};
+  CATALOGO.forEach(c=>{ comps[c.id] = { auto:null, par:null, gestor:null, obs:'', foco:false }; });
+  return {
+    versao:1,
+    meta:{ nome:'', cargo:'', org:'', objetivo:'' },
+    comps,
+    swot:{ forcas:'', fraquezas:'', oportunidades:'', ameacas:'', sintese:'' },
+    plano:{ curto:[], medio:[], longo:[] },
+    objetivos:{ FO:[], WO:[], FA:[], WT:[] },   /* objetivos estratégicos da matriz cruzada */
+    critico:{},
+    ui:{ filtro:'todos', horizonte:'curto', ordem:'catalogo', soAvaliadas:false, grupoGrafico:'todos' }
+  };
+}
+let estado = estadoPadrao();
+
+/* Carrega do localStorage mesclando com o padrão (tolerante a versões antigas) */
+function carregar(){
+  try{
+    if(!LS) return false;
+    const bruto = LS.getItem(CHAVE);
+    if(!bruto) return false;
+    const salvo = JSON.parse(bruto);
+    const base = estadoPadrao();
+    estado = Object.assign(base, salvo);
+    estado.meta = Object.assign(base.meta, salvo.meta||{});
+    estado.swot = Object.assign(base.swot, salvo.swot||{});
+    estado.critico = salvo.critico||{};
+    estado.ui = Object.assign(base.ui, salvo.ui||{});
+    estado.plano = { curto:[], medio:[], longo:[] };
+    estado.objetivos = { FO:[], WO:[], FA:[], WT:[] };
+    ['FO','WO','FA','WT'].forEach(q=>{
+      estado.objetivos[q] = Array.isArray(((salvo.objetivos||{})[q])) ? salvo.objetivos[q] : [];
+    });
+    HORIZONTES.forEach(h=>{ estado.plano[h.id] = Array.isArray((salvo.plano||{})[h.id]) ? salvo.plano[h.id] : []; });
+    estado.comps = {};
+    CATALOGO.forEach(c=>{ estado.comps[c.id] = Object.assign({auto:null,par:null,gestor:null,obs:'',foco:false}, (salvo.comps||{})[c.id]||{}); });
+    return true;
+  }catch(e){ console.warn('Não foi possível ler os dados salvos:', e); return false; }
+}
+
+let timerSalvar = null;
+function salvar(){
+  clearTimeout(timerSalvar);
+  timerSalvar = setTimeout(()=>{
+    if(!LS){ marcarStatus('Armazenamento local indisponível neste contexto', false); return; }
+    try{
+      LS.setItem(CHAVE, JSON.stringify(estado));
+      const kb = (JSON.stringify(estado).length/1024).toFixed(1);
+      marcarStatus('Salvo neste navegador · '+kb+' KB', true);
+    }catch(e){
+      marcarStatus('Não foi possível salvar (armazenamento cheio ou bloqueado)', false);
+    }
+  }, 350);
+}
+function marcarStatus(txt, ok){
+  const t=document.getElementById('statusTxt'), p=document.querySelector('.ponto');
+  if(t) t.textContent = txt;
+  if(p) p.classList.toggle('off', !ok);
+}
+
+/* Utilidades ---- */
+const $  = (s,r=document)=>r.querySelector(s);
+const $$ = (s,r=document)=>Array.from(r.querySelectorAll(s));
+const esc = s => String(s??'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+const num = v => (typeof v==='number' && !isNaN(v)) ? v : null;
+const fmt = v => v===null ? '—' : (Math.round(v*10)/10).toLocaleString('pt-BR');
+function media(arr){ const v=arr.filter(x=>x!==null); return v.length? v.reduce((a,b)=>a+b,0)/v.length : null; }
+function mediaExterna(id){
+  const c=estado.comps[id];
+  return media([num(c.par), num(c.gestor)]);
+}
+function gapComp(id){
+  const c=estado.comps[id], auto=num(c.auto), ext=mediaExterna(id);
+  return (auto!==null && ext!==null) ? Math.round((auto-ext)*10)/10 : null;
+}
+function toast(msg){
+  const el=$('#toast'); el.textContent=msg; el.classList.add('on');
+  clearTimeout(el._t); el._t=setTimeout(()=>el.classList.remove('on'), 2400);
+}
+function baixar(nome, conteudo, tipo='text/plain;charset=utf-8'){
+  const blob=new Blob([conteudo],{type:tipo});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob); a.download=nome;
+  document.body.appendChild(a); a.click();
+  setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); }, 800);
+}
+const hoje = () => new Date().toLocaleDateString('pt-BR');
+const isoHoje = () => new Date().toISOString().slice(0,10);
+
+/* ================================================================
+   3) NAVEGAÇÃO ENTRE ETAPAS
+   ================================================================ */
+function irPara(passo){
+  const alvo = document.getElementById('passo-'+passo);
+  if(!alvo) return;
+  $$('.passo').forEach(s=>s.classList.toggle('ativo', s===alvo));
+  $$('nav.abas button').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.ir===passo)));
+  estado.ui.passo = passo; salvar();
+  if(passo==='resumo'){ renderResumo(); }
+  if(passo==='swot'){ renderApoioSwot(); renderObjetivos(); }
+  if(passo==='plano'){ renderKpisPlano(); }
+  if(passo==='critico'){ renderChecklist(); }
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+document.addEventListener('click', e=>{
+  const b = e.target.closest('[data-ir]');
+  if(b){ irPara(b.dataset.ir); }
+});
+
+/* Progresso geral: perfil + competências avaliadas + SWOT + plano */
+function atualizarProgresso(){
+  let itens=0, feitos=0;
+  itens+=1; if(estado.meta.nome) feitos+=1;
+  const av = CATALOGO.filter(c=>num(estado.comps[c.id].auto)!==null).length;
+  itens+=CATALOGO.length; feitos+=av;
+  itens+=2;
+  if(estado.swot.forcas && estado.swot.fraquezas) feitos+=1;
+  if(estado.swot.oportunidades && estado.swot.ameacas) feitos+=1;
+  itens+=4;
+  QUADRANTES.forEach(q=>{ if((estado.objetivos[q.id]||[]).some(o=>o.texto&&o.texto.trim().length>=8)) feitos+=1; });
+  itens+=3;
+  HORIZONTES.forEach(h=>{ if(estado.plano[h.id].length) feitos+=1; });
+  const pct = Math.round(feitos/itens*100);
+  const barra=document.getElementById('barraProgresso');
+  if(barra){ barra.style.width = pct+'%'; barra.parentElement.setAttribute('aria-label','Progresso do planejamento: '+pct+'%'); }
+}
+
+/* ================================================================
+   4) ETAPA 1 — MAPEAMENTO
+   ================================================================ */
+function notaPill(tipo, v){
+  const labs={auto:'Auto', par:'Par', gestor:'Gestor'};
+  const cls={auto:'auto', par:'par', gestor:'ges'};
+  const txt = v===null ? '—' : fmt(v);
+  return '<span class="pill '+cls[tipo]+'" title="'+labs[tipo]+'">'+labs[tipo]+' '+txt+'</span>';
+}
+
+/* Rótulos dos três grupos do catálogo */
+const GRUPO_ROTULO = { desempenho:'Desempenho', pessoal:'Pessoal', complementar:'Séc. XXI' };
+const GRUPO_CLASSE = { desempenho:'des', pessoal:'pes', complementar:'novo' };
+function grupoTag(c){
+  return '<span class="etiqueta '+GRUPO_CLASSE[c.gru]+'">'+GRUPO_ROTULO[c.gru]+'</span>';
+}
+
+function htmlCompetencia(c){
+  const d = estado.comps[c.id];
+  const ext = mediaExterna(c.id), gap = gapComp(c.id);
+  const gtxt = gap===null ? '' : ' · gap '+(gap>0?'+':'')+fmt(gap);
+  return `
+  <article class="comp" data-id="${c.id}" data-aberto="false">
+    <div class="comp-cab" role="button" tabindex="0" aria-expanded="false">
+      <div class="comp-tit">
+        <h4>${esc(c.nome)}
+          ${grupoTag(c)}
+          ${d.foco?'<span class="etiqueta foco">foco</span>':''}
+        </h4>
+        <span class="ref">${esc(c.ref)} · ${esc(c.en)}${c.sub?' · '+esc(c.sub):''}</span>
+      </div>
+      <div class="comp-resumo" data-resumo="${c.id}">
+        ${notaPill('auto', num(d.auto))}
+        ${(num(d.par)!==null)?notaPill('par', num(d.par)):''}
+        ${(num(d.gestor)!==null)?notaPill('gestor', num(d.gestor)):''}
+        ${ext!==null?`<span class="pill" title="Média de pares e gestores">ext ${fmt(ext)}${gtxt}</span>`:''}
+      </div>
+      <label class="mudo" style="display:flex;align-items:center;gap:.35rem;white-space:nowrap" onclick="event.stopPropagation()">
+        <input type="checkbox" data-foco="${c.id}" ${d.foco?'checked':''} style="width:auto"> foco
+      </label>
+    </div>
+    <div class="comp-corpo">
+      <p style="font-size:.88rem;color:var(--ink-2);margin:0 0 .6rem">${esc(c.desc)}</p>
+      <div class="elem">
+        <strong>${c.gru==='complementar'?'Indicadores de competência (fora do PMCD)':'Elementos de competência (PMCD)'}</strong>
+        <ul>${c.elementos.map(e=>'<li>'+esc(e)+'</li>').join('')}</ul>
+        ${c.fonte?'<p class="mudo" style="margin:.45rem 0 0">Base: '+esc(c.fonte)+'</p>':''}
+      </div>
+      <div class="notas">
+        ${blocoNota(c.id,'auto','Sua nota','auto')}
+        ${blocoNota(c.id,'par','Par (feedback)','par')}
+        ${blocoNota(c.id,'gestor','Gestor (feedback)','gestor')}
+      </div>
+      <label class="campo" for="obs-${c.id}">Observações e evidências <span class="mudo" style="font-weight:400">— projeto, papel, resultado, quem deu o feedback</span></label>
+      <textarea id="obs-${c.id}" data-obs="${c.id}" placeholder="Ex.: no projeto Alfa (2025) conduzi a análise de riscos; risco crítico antecipado gerou contingência aprovada. Gestor avaliou 7 e citou a oficina de riscos.">${esc(d.obs)}</textarea>
+    </div>
+  </article>`;
+}
+
+/* Bloco de nota (auto/par/gestor) com slider + campo numérico */
+function blocoNota(id, tipo, rotulo, cls){
+  const v = num(estado.comps[id][tipo]);
+  return `
+  <div class="nota-item ${cls}">
+    <div class="topo-nota">
+      <span>${rotulo}</span>
+      <b data-mostra="${id}-${tipo}">${v===null?'—':fmt(v)}</b>
+    </div>
+    <input type="range" min="0" max="10" step="1" value="${v===null?0:v}"
+           data-range="${id}" data-tipo="${tipo}" aria-label="${rotulo} de ${esc(POR_ID[id].nome)}">
+    <div style="display:flex;gap:.4rem;align-items:center;margin-top:.3rem">
+      <input type="number" min="0" max="10" step="1" value="${v===null?'':v}"
+             data-num="${id}" data-tipo="${tipo}" placeholder="0–10"
+             aria-label="${rotulo} (0 a 10) de ${esc(POR_ID[id].nome)}" style="max-width:78px;padding:.3rem .45rem;font-size:.82rem">
+      <button type="button" class="limpar-nota" data-limpar="${id}" data-tipo="${tipo}">limpar</button>
+    </div>
+  </div>`;
+}
+
+function renderMapeamento(){
+  const filtro = estado.ui.filtro;
+  const soAv = estado.ui.soAvaliadas;
+  let lista = CATALOGO.slice();
+  if(filtro==='desempenho') lista = lista.filter(c=>c.gru==='desempenho');
+  if(filtro==='pessoal') lista = lista.filter(c=>c.gru==='pessoal');
+  if(filtro==='complementar') lista = lista.filter(c=>c.gru==='complementar');
+  if(filtro==='foco') lista = lista.filter(c=>estado.comps[c.id].foco);
+  if(soAv) lista = lista.filter(c=>num(estado.comps[c.id].auto)!==null);
+
+  const alvo = $('#listaCompetencias');
+  alvo.innerHTML = lista.length
+    ? lista.map(htmlCompetencia).join('')
+    : '<div class="vazio">Nenhuma competência neste filtro. '+(filtro==='foco'?'Marque competências como “foco” no mapeamento.':'')+'</div>';
+  renderKpisMapeamento();
+  atualizarProgresso();
+}
+
+function renderKpisMapeamento(){
+  const total = CATALOGO.length;
+  const avals = CATALOGO.map(c=>num(estado.comps[c.id].auto)).filter(v=>v!==null);
+  const ext = CATALOGO.map(c=>mediaExterna(c.id)).filter(v=>v!==null);
+  const focos = CATALOGO.filter(c=>estado.comps[c.id].foco).length;
+  const compAv = CATALOGO.filter(c=>c.gru==='complementar' && num(estado.comps[c.id].auto)!==null).length;
+  const compTot = CATALOGO.filter(c=>c.gru==='complementar').length;
+  const gaps = CATALOGO.map(c=>({id:c.id,g:gapComp(c.id),nome:c.nome})).filter(x=>x.g!==null);
+  gaps.sort((a,b)=>Math.abs(b.g)-Math.abs(a.g));
+  $('#kpisMapeamento').innerHTML = `
+    <div class="kpi"><div class="rot">Competências avaliadas</div><div class="val">${avals.length}<span style="font-size:.9rem;color:var(--ink-3)">/${total}</span></div><div class="nota">autoavaliação preenchida</div></div>
+    <div class="kpi"><div class="rot">Módulo século XXI</div><div class="val">${compAv}<span style="font-size:.9rem;color:var(--ink-3)">/${compTot}</span></div><div class="nota">fora do PMCD</div></div>
+    <div class="kpi"><div class="rot">Média autoavaliação</div><div class="val">${avals.length?fmt(media(avals)):'—'}</div><div class="nota">escala 0–10</div></div>
+    <div class="kpi"><div class="rot">Média externa</div><div class="val">${ext.length?fmt(media(ext)):'—'}</div><div class="nota">${ext.length?'pares e gestores':'sem feedback registrado'}</div></div>
+    <div class="kpi"><div class="rot">Competências-foco</div><div class="val">${focos}</div><div class="nota">${focos>3?'acima do recomendado (3)':'limite recomendado: 3'}</div></div>
+    <div class="kpi"><div class="rot">Maior divergência</div><div class="val" style="font-size:1.05rem">${gaps.length?esc(gaps[0].nome):'—'}</div><div class="nota">${gaps.length?('gap '+(gaps[0].g>0?'+':'')+fmt(gaps[0].g)):'precisa de feedback'}</div></div>`;
+}
+
+/* Atualiza apenas os indicadores visuais de uma competência (sem re-render) */
+function atualizarComp(id){
+  const c = POR_ID[id], d = estado.comps[id];
+  const card = document.querySelector('.comp[data-id="'+id+'"]');
+  if(card){
+    const ext = mediaExterna(id), gap = gapComp(id);
+    const alvo = card.querySelector('[data-resumo]');
+    if(alvo){
+      alvo.innerHTML = notaPill('auto', num(d.auto))
+        + (num(d.par)!==null?notaPill('par', num(d.par)):'')
+        + (num(d.gestor)!==null?notaPill('gestor', num(d.gestor)):'')
+        + (ext!==null?`<span class="pill" title="Média de pares e gestores">ext ${fmt(ext)}${gap===null?'':' · gap '+(gap>0?'+':'')+fmt(gap)}</span>`:'');
+    }
+    // etiqueta de foco no título
+    const h4 = card.querySelector('.comp-tit h4');
+    const temEt = h4.querySelector('.etiqueta.foco');
+    if(d.foco && !temEt){ h4.insertAdjacentHTML('beforeend','<span class="etiqueta foco">foco</span>'); }
+    if(!d.foco && temEt){ temEt.remove(); }
+    ['auto','par','gestor'].forEach(t=>{
+      const b = card.querySelector('[data-mostra="'+id+'-'+t+'"]');
+      const v = num(d[t]);
+      if(b) b.textContent = v===null?'—':fmt(v);
+    });
+  }
+  renderKpisMapeamento();
+  atualizarProgresso();
+}
+
+/* Eventos do mapeamento (delegação) */
+document.addEventListener('click', e=>{
+  // abrir/fechar card
+  const cab = e.target.closest('.comp-cab');
+  if(cab && !e.target.closest('input')){
+    const card = cab.closest('.comp');
+    const aberto = card.dataset.aberto === 'true';
+    card.dataset.aberto = String(!aberto);
+    cab.setAttribute('aria-expanded', String(!aberto));
+    return;
+  }
+  // limpar nota
+  const lim = e.target.closest('[data-limpar]');
+  if(lim){
+    const id=lim.dataset.limpar, tipo=lim.dataset.tipo;
+    estado.comps[id][tipo]=null;
+    const card=lim.closest('.comp');
+    card.querySelector('[data-num="'+id+'"][data-tipo="'+tipo+'"]').value='';
+    card.querySelector('[data-range="'+id+'"][data-tipo="'+tipo+'"]').value=0;
+    atualizarComp(id); salvar();
+    return;
+  }
+  // filtros
+  const f = e.target.closest('[data-filtro]');
+  if(f){
+    estado.ui.filtro=f.dataset.filtro;
+    $$('[data-filtro]').forEach(b=>b.setAttribute('aria-selected', String(b===f)));
+    renderMapeamento(); salvar(); return;
+  }
+  // horizontes do plano
+  const h = e.target.closest('[data-horizonte]');
+  if(h){
+    estado.ui.horizonte=h.dataset.horizonte;
+    $$('[data-horizonte]').forEach(b=>b.setAttribute('aria-selected', String(b===h)));
+    mostrarHorizonte(); salvar(); return;
+  }
+});
+
+/* Teclado: abrir card com Enter/Espaço */
+document.addEventListener('keydown', e=>{
+  const cab = e.target.closest('.comp-cab');
+  if(cab && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); cab.click(); }
+});
+
+/* Alterações de valor (inputs) */
+document.addEventListener('input', e=>{
+  const t = e.target;
+  // notas
+  if(t.matches('[data-range]') || t.matches('[data-num]')){
+    const id=t.dataset.range||t.dataset.num, tipo=t.dataset.tipo;
+    let v = t.value==='' ? null : Math.max(0, Math.min(10, parseInt(t.value,10)));
+    if(v!==null && isNaN(v)) v=null;
+    estado.comps[id][tipo]=v;
+    const card=t.closest('.comp');
+    const r=card.querySelector('[data-range="'+id+'"][data-tipo="'+tipo+'"]');
+    const n=card.querySelector('[data-num="'+id+'"][data-tipo="'+tipo+'"]');
+    if(t.matches('[data-range]') && n) n.value = v===null?'':v;
+    if(t.matches('[data-num]')){
+      if(r) r.value = v===null?0:v;
+      if(v!==null && String(v)!==t.value) t.value = v;  // corrige valores fora de 0–10
+    }
+    atualizarComp(id); salvar();
+    return;
+  }
+  // observações do mapeamento
+  if(t.matches('[data-obs]')){ estado.comps[t.dataset.obs].obs=t.value; salvar(); return; }
+  // SWOT
+  if(t.matches('[data-swot]')){ estado.swot[t.dataset.swot]=t.value; salvar(); atualizarProgresso(); return; }
+  // perfil
+  if(t.matches('[data-meta]')){ estado.meta[t.dataset.meta]=t.value; salvar(); atualizarProgresso(); return; }
+  // pensamento crítico
+  if(t.matches('[data-critico]')){ estado.critico[t.dataset.critico]=t.value; salvar(); return; }
+});
+
+/* foco / caixa "só avaliadas" */
+document.addEventListener('change', e=>{
+  const t=e.target;
+  if(t.matches('[data-foco]')){
+    const id=t.dataset.foco;
+    if(t.checked && CATALOGO.filter(c=>estado.comps[c.id].foco).length>=3 && !estado.comps[id].foco){
+      toast('Limite recomendado de 3 focos atingido — desmarque outra competência para trocar.');
+    }
+    estado.comps[id].foco=t.checked;
+    atualizarComp(id); salvar();
+    if(estado.ui.filtro==='foco') renderMapeamento();
+    return;
+  }
+  if(t.id==='soAvaliadas'){ estado.ui.soAvaliadas=t.checked; renderMapeamento(); salvar(); }
+  if(t.id==='ordenacao'){ estado.ui.ordem=t.value; renderTabelaResumo(); salvar(); }
+  if(t.id==='grupoGrafico'){ estado.ui.grupoGrafico=t.value; renderResumo(); salvar(); }
+});
+
+/* ================================================================
+   5) ETAPA 2 — SWOT (apoio com dados do mapeamento)
+   ================================================================ */
+function renderApoioSwot(){
+  const comNota = CATALOGO.map(c=>({
+    c, auto:num(estado.comps[c.id].auto), ext:mediaExterna(c.id), gap:gapComp(c.id),
+    foco:estado.comps[c.id].foco
+  })).filter(x=>x.auto!==null);
+
+  if(!comNota.length){
+    $('#apoioSwot').innerHTML = '<div class="vazio">Ainda não há notas. Volte ao mapeamento para gerar insumos.</div>';
+    return;
+  }
+  const fortes = comNota.slice().sort((a,b)=>b.auto-a.auto).slice(0,4);
+  const fracas = comNota.slice().sort((a,b)=>a.auto-b.auto).slice(0,4);
+  const gapsN = comNota.filter(x=>x.gap!==null).sort((a,b)=>a.gap-b.gap).slice(0,3);
+  const focos = comNota.filter(x=>x.foco);
+
+  const li = x => `<li><strong>${esc(x.c.nome)}</strong> — auto ${fmt(x.auto)}${x.ext!==null?' · ext '+fmt(x.ext):''}${x.gap!==null?' · gap '+(x.gap>0?'+':'')+fmt(x.gap):''}</li>`;
+  $('#apoioSwot').innerHTML = `
+    <p class="mudo" style="margin:.2rem 0 .3rem"><strong>Notas mais altas</strong> (candidatas a forças)</p>
+    <ul class="lista">${fortes.map(li).join('')}</ul>
+    <p class="mudo" style="margin:.2rem 0 .3rem"><strong>Notas mais baixas</strong> (candidatas a fraquezas)</p>
+    <ul class="lista">${fracas.map(li).join('')}</ul>
+    ${gapsN.length?`<p class="mudo" style="margin:.2rem 0 .3rem"><strong>Maiores divergências com o feedback</strong> <span class="etiqueta foco">olhar com atenção</span></p><ul class="lista">${gapsN.map(li).join('')}</ul>`:''}
+    ${focos.length?`<p class="mudo" style="margin:.2rem 0 .3rem"><strong>Focos marcados</strong></p><ul class="lista">${focos.map(li).join('')}</ul>`:''}
+    <p class="mudo" style="margin-bottom:0">Avaliadas: ${comNota.length}/${CATALOGO.length} · média ${fmt(media(comNota.map(x=>x.auto)))}</p>`;
+}
+
+/* ================================================================
+   5-bis) ETAPA 2.2 — OBJETIVOS ESTRATÉGICOS (MATRIZ CRUZADA)
+   Cruzamento dos quadrantes da SWOT em quatro estratégias clássicas:
+   FO (ofensiva), WO (reorientação), FA (defensiva), WT (sobrevivência).
+   ================================================================ */
+const QUADRANTES = [
+  { id:'FO', nome:'Ofensiva (crescimento)', par:'Forças + Oportunidades', cor:'#0f766e',
+    pergunta:'Como uso o que faço bem para capturar uma oportunidade?',
+    desc:'Estratégia de ataque: potencializa forças em direção às oportunidades identificadas.',
+    exemplo:'“Usar minha força em gestão de riscos (nota 8) para liderar a análise de riscos do projeto de ERP, tornando-me referência da área até dezembro.”' },
+  { id:'WO', nome:'Reorientação (aproveitamento)', par:'Fraquezas + Oportunidades', cor:'#2563eb',
+    pergunta:'O que preciso desenvolver para não perder essa oportunidade?',
+    desc:'Estratégia de desenvolvimento: reduz a fraqueza porque há uma oportunidade concreta em jogo.',
+    exemplo:'“Desenvolver controle de custos (hoje 3/10) para assumir o orçamento do projeto de expansão no próximo semestre.”' },
+  { id:'FA', nome:'Defensiva', par:'Forças + Ameaças', cor:'#b45309',
+    pergunta:'Como uso uma força para reduzir uma ameaça?',
+    desc:'Estratégia de proteção: usa uma força existente para diminuir exposição a riscos externos.',
+    exemplo:'“Usar minha reputação de entrega para negociar priorização e blindar a equipe contra a sobrecarga prevista na reestruturação.”' },
+  { id:'WT', nome:'Sobrevivência (retirada)', par:'Fraquezas + Ameaças', cor:'#be123c',
+    pergunta:'Como reduzo a fragilidade e evito (ou me retiro de) uma ameaça?',
+    desc:'Estratégia de contenção: evita o pior cenário, reduz exposição e define um limite de saída.',
+    exemplo:'“Reconhecer lacuna em gestão de aquisições e recusar a liderança de um contrato crítico sem apoio jurídico, atuando como apoio até me capacitar.”' }
+];
+
+/* Objetivos completos = cada quadrante com pelo menos um objetivo escrito */
+function objetivosCompletos(){
+  return QUADRANTES.every(q => (estado.objetivos[q.id]||[]).some(o=>o.texto && o.texto.trim().length>=8));
+}
+function quadrantesPendentes(){
+  return QUADRANTES.filter(q => !(estado.objetivos[q.id]||[]).some(o=>o.texto && o.texto.trim().length>=8));
+}
+function todosObjetivos(){
+  const arr=[];
+  QUADRANTES.forEach(q=>(estado.objetivos[q.id]||[]).forEach((o,i)=>{
+    arr.push({ ...o, quad:q.id, codigo:q.id+'-'+(i+1), quadNome:q.nome,
+      rotulo:q.id+'-'+(i+1)+' · '+(o.texto?o.texto.slice(0,70)+(o.texto.length>70?'…':''):'(sem descrição)') });
+  }));
+  return arr;
+}
+function novoObjetivo(q){
+  return { id:'ob'+Date.now()+Math.random().toString(16).slice(2,6), texto:'', comp:'', prazo:'', indicador:'' };
+}
+
+function htmlObjetivo(o, q, i){
+  return `
+  <div class="item-plano obj-card" data-q="${q}" data-oid="${o.id}" style="border-left:4px solid ${QUADRANTES.find(x=>x.id===q).cor};background:#fcfdff">
+    <div class="cab">
+      <span class="n" style="background:${QUADRANTES.find(x=>x.id===q).cor}">${q}</span>
+      <strong style="font-size:.9rem">Objetivo ${q}-${i+1}</strong>
+      <span class="mudo">${QUADRANTES.find(x=>x.id===q).par}</span>
+      <button class="botao perigo pequeno espaco" type="button" data-rem-obj="${o.id}" data-q="${q}">Remover</button>
+    </div>
+    <label class="campo">Objetivo estratégico <span class="mudo" style="font-weight:400">— o que, para quê, até quando</span></label>
+    <textarea data-obj="texto" data-oid="${o.id}" data-q="${q}" style="min-height:62px" placeholder="Ex.: Aproveitar minha força em negociação para assumir a interlocução com fornecedores críticos, até junho, com avaliação positiva do patrocinador.">${esc(o.texto)}</textarea>
+    <div class="grade-campos" style="margin-top:.6rem;grid-template-columns:1.3fr .8fr">
+      <div>
+        <label class="campo">Competência-âncora <span class="mudo" style="font-weight:400">(do catálogo)</span></label>
+        <select data-obj="comp" data-oid="${o.id}" data-q="${q}">${opcoesComp(o.comp)}</select>
+      </div>
+      <div>
+        <label class="campo">Prazo-alvo</label>
+        <input type="date" data-obj="prazo" data-oid="${o.id}" data-q="${q}" value="${esc(o.prazo)}">
+      </div>
+    </div>
+    <div style="margin-top:.6rem">
+      <label class="campo">Indicador de alcance do objetivo</label>
+      <input type="text" data-obj="indicador" data-oid="${o.id}" data-q="${q}" value="${esc(o.indicador)}" placeholder="Ex.: 2 comitês com apresentação aprovada + nota de comunicação executiva ≥ 7 no próximo mapeamento">
+    </div>
+    <p class="mudo" style="margin:.45rem 0 0">Exemplo de referência: ${esc(QUADRANTES.find(x=>x.id===q).exemplo)}</p>
+  </div>`;
+}
+
+function renderObjetivos(){
+  const alvo = $('#matrizObjetivos');
+  if(!alvo) return;
+  alvo.innerHTML = QUADRANTES.map(q=>{
+    const lista = estado.objetivos[q.id]||[];
+    return `
+    <div class="cartao" style="border:1px solid var(--line);box-shadow:none;margin-bottom:.9rem;padding:.9rem">
+      <div style="display:flex;gap:.6rem;align-items:flex-start;flex-wrap:wrap">
+        <span class="etiqueta" style="background:${q.cor};color:#fff">${q.id}</span>
+        <div style="flex:1 1 260px">
+          <h3 style="margin:0;font-size:1rem">${esc(q.nome)} <span class="mudo" style="font-weight:500;font-size:.82rem">· ${esc(q.par)}</span></h3>
+          <p class="mudo" style="margin:.15rem 0 .3rem">${esc(q.desc)}</p>
+          <p style="margin:0;font-size:.86rem;color:var(--ink-2)"><strong>Pergunta-chave:</strong> ${esc(q.pergunta)}</p>
+        </div>
+        <span class="etiqueta ${lista.some(o=>o.texto&&o.texto.trim().length>=8)?'ok':'foco'}" data-qstatus="${q.id}">${lista.some(o=>o.texto&&o.texto.trim().length>=8)?'objetivo definido':'pendente'}</span>
+      </div>
+      <div style="margin-top:.7rem">
+        ${lista.length?lista.map((o,i)=>htmlObjetivo(o,q.id,i)).join(''):'<div class="vazio">Nenhum objetivo nesta estratégia ainda.</div>'}
+      </div>
+      <button class="botao sec pequeno" type="button" data-add-obj="${q.id}">+ Adicionar objetivo ${q.id}</button>
+    </div>`;
+  }).join('');
+  renderInsumosObjetivos();
+  renderKpisObjetivos();
+}
+
+function renderKpisObjetivos(){
+  const alvo=$('#kpisObjetivos'); if(!alvo) return;
+  const todos=todosObjetivos();
+  const comTexto=todos.filter(o=>o.texto && o.texto.trim().length>=8);
+  const pend=quadrantesPendentes();
+  const comComp=todos.filter(o=>o.comp && (POR_ID[o.comp]||o.comp==='outra')).length;
+  alvo.innerHTML = `
+    <div class="kpi"><div class="rot">Objetivos escritos</div><div class="val">${comTexto.length}</div><div class="nota">${todos.length} registrados</div></div>
+    <div class="kpi"><div class="rot">Quadrantes cobertos</div><div class="val">${4-pend.length}<span style="font-size:.9rem;color:var(--ink-3)">/4</span></div><div class="nota">${pend.length?'pendente(s): '+pend.map(q=>q.id).join(', '):'matriz completa'}</div></div>
+    <div class="kpi"><div class="rot">Com competência-âncora</div><div class="val">${comComp}</div><div class="nota">liga objetivo ao catálogo</div></div>
+    <div class="kpi"><div class="rot">Plano liberado?</div><div class="val" style="font-size:1.1rem">${objetivosCompletos()?'Sim':'Não'}</div><div class="nota">${objetivosCompletos()?'pode criar ações':'defina 1 objetivo por quadrante'}</div></div>`;
+}
+
+/* Painel de insumos: o que já foi apontado no mapeamento e na SWOT */
+function renderInsumosObjetivos(){
+  const alvo=$('#insumosObjetivos'); if(!alvo) return;
+  const comNota = CATALOGO.map(c=>({c,auto:num(estado.comps[c.id].auto),ext:mediaExterna(c.id),gap:gapComp(c.id)}))
+    .filter(x=>x.auto!==null);
+  const fortes = comNota.slice().sort((a,b)=>b.auto-a.auto).slice(0,4);
+  const fracas = comNota.slice().sort((a,b)=>a.auto-b.auto).slice(0,4);
+  const gaps = comNota.filter(x=>x.gap!==null).sort((a,b)=>a.gap-b.gap).slice(0,3);
+  const li = x=>`<li><strong>${esc(x.c.nome)}</strong> — auto ${fmt(x.auto)}${x.ext!==null?' · ext '+fmt(x.ext):''}${x.gap!==null?' · gap '+(x.gap>0?'+':'')+fmt(x.gap):''}</li>`;
+  const blocos=[];
+  if(fortes.length) blocos.push('<p class="mudo" style="margin:.2rem 0 .25rem"><strong>Forças (notas mais altas)</strong></p><ul class="lista">'+fortes.map(li).join('')+'</ul>');
+  if(fracas.length) blocos.push('<p class="mudo" style="margin:.2rem 0 .25rem"><strong>Fraquezas (notas mais baixas)</strong></p><ul class="lista">'+fracas.map(li).join('')+'</ul>');
+  if(gaps.length) blocos.push('<p class="mudo" style="margin:.2rem 0 .25rem"><strong>Maiores divergências com o feedback externo</strong></p><ul class="lista">'+gaps.map(li).join('')+'</ul>');
+  const s1 = estado.swot.oportunidades ? '<p class="mudo" style="margin:.4rem 0 .2rem"><strong>Oportunidades que você escreveu</strong></p><p style="font-size:.84rem;white-space:pre-wrap">'+esc(estado.swot.oportunidades.slice(0,400))+'</p>' : '';
+  const s2 = estado.swot.ameacas ? '<p class="mudo" style="margin:.4rem 0 .2rem"><strong>Ameaças que você escreveu</strong></p><p style="font-size:.84rem;white-space:pre-wrap">'+esc(estado.swot.ameacas.slice(0,400))+'</p>' : '';
+  alvo.innerHTML = (blocos.join('')||'<p class="mudo">Ainda sem notas no mapeamento. Volte à etapa 1 para gerar insumos.</p>') + s1 + s2;
+}
+
+/* Eventos do módulo de objetivos */
+document.addEventListener('click', e=>{
+  const add=e.target.closest('[data-add-obj]');
+  if(add){
+    const q=add.dataset.addObj;
+    estado.objetivos[q].push(novoObjetivo(q));
+    renderObjetivos(); renderKpisPlano(); salvar();
+    return;
+  }
+  const rem=e.target.closest('[data-rem-obj]');
+  if(rem){
+    const q=rem.dataset.q, id=rem.dataset.remObj;
+    if(!confirm('Remover este objetivo? As ações do plano ligadas a ele ficarão sem vínculo.')) return;
+    estado.objetivos[q]=estado.objetivos[q].filter(o=>o.id!==id);
+    let limpas=0;
+    HORIZONTES.forEach(h=>estado.plano[h.id].forEach(it=>{ if(it.objetivo===id){ it.objetivo=''; limpas++; } }));
+    if(limpas) toast(limpas+' ação(ões) perderam o vínculo com o objetivo removido.');
+    renderObjetivos(); renderPlano(); salvar();
+    return;
+  }
+});
+
+function tratarCampoObjetivo(t){
+  const q=t.dataset.q, oid=t.dataset.oid, campo=t.dataset.obj;
+  const o=(estado.objetivos[q]||[]).find(x=>x.id===oid);
+  if(!o) return;
+  o[campo]=t.value;
+  salvar();
+  renderKpisObjetivos();
+  if(campo==='texto'){
+    const ok=(estado.objetivos[q]||[]).some(x=>x.texto&&x.texto.trim().length>=8);
+    const badge=document.querySelector('[data-qstatus="'+q+'"]');
+    if(badge){ badge.className='etiqueta '+(ok?'ok':'foco'); badge.textContent=ok?'objetivo definido':'pendente'; }
+    renderStatusPlano();
+    atualizarProgresso();
+  }
+}
+document.addEventListener('input', e=>{ if(e.target.matches('[data-obj]')) tratarCampoObjetivo(e.target); });
+document.addEventListener('change', e=>{ if(e.target.matches('[data-obj]')) tratarCampoObjetivo(e.target); });
+
+/* ================================================================
+   6) ETAPA 3 — PLANO DE AÇÃO
+   ================================================================ */
+const STATUS = ['Não iniciado','Em andamento','Concluído','Revisar'];
+
+function novoItem(h){
+  return { id:'i'+Date.now()+Math.random().toString(16).slice(2,6), objetivo:'', comp:'', meta:'', acao:'', prazo:'', indicador:'', status:'Não iniciado', horizonte:h };
+}
+
+/* Um item está alinhado quando aponta para um objetivo estratégico E para uma competência */
+function itemAlinhado(it){
+  return !!it.objetivo && !!it.comp && (!!POR_ID[it.comp] || it.comp==='outra');
+}
+
+/* Opções de objetivos, agrupadas pelas quatro estratégias */
+function opcoesObjetivo(sel){
+  const grupos = QUADRANTES.map(q=>{
+    const itens = (estado.objetivos[q.id]||[]);
+    if(!itens.length) return '';
+    return '<optgroup label="'+q.id+' — '+esc(q.nome)+'">'+itens.map((o,i)=>{
+      const rot = q.id+'-'+(i+1)+' · '+(o.texto?o.texto.slice(0,60)+(o.texto.length>60?'…':''):'(sem descrição)');
+      return '<option value="'+o.id+'" '+(sel===o.id?'selected':'')+'>'+esc(rot)+'</option>';
+    }).join('')+'</optgroup>';
+  }).join('');
+  return '<option value="" '+(sel?'':'selected')+'>Selecione o objetivo estratégico…</option>'+grupos;
+}
+
+function opcoesComp(sel){
+  const focos = CATALOGO.filter(c=>estado.comps[c.id].foco);
+  const outros = CATALOGO.filter(c=>!estado.comps[c.id].foco);
+  const opt = c=>`<option value="${c.id}" ${sel===c.id?'selected':''}>${esc(c.nome)} (${c.ref})</option>`;
+  return `<option value="" ${sel?'':'selected'}>Selecione a competência…</option>`
+    + (focos.length?`<optgroup label="Focos marcados">${focos.map(opt).join('')}</optgroup>`:'')
+    + `<optgroup label="Todas as competências do catálogo">${outros.map(opt).join('')}</optgroup>`
+    + `<option value="outra" ${sel==='outra'?'selected':''}>Outra (fora do catálogo)</option>`;
+}
+
+function htmlItem(it, i, h){
+  const auto = it.comp && POR_ID[it.comp] ? num(estado.comps[it.comp].auto) : null;
+  const alinhado = itemAlinhado(it);
+  return `
+  <div class="item-plano" data-h="${h}" data-pid="${it.id}" style="border-left:4px solid ${alinhado?'#0f766e':'#f59e0b'}">
+    <div class="cab">
+      <span class="n">${i+1}</span>
+      <span class="etiqueta ${alinhado?'ok':'foco'}" data-badge="${it.id}">${alinhado?'alinhada':'alinhamento pendente'}</span>
+      <span class="mudo">${auto!==null?'Nota atual nesta competência: '+fmt(auto)+'/10':'defina a meta de forma verificável'}</span>
+      <button class="botao perigo pequeno espaco" type="button" data-remover="${it.id}" data-h="${h}">Remover</button>
+    </div>
+    <div style="margin-bottom:.6rem">
+      <label class="campo">Objetivo estratégico que esta ação atende <span class="mudo" style="font-weight:400">— obrigatório</span></label>
+      <select data-plano="objetivo" data-pid="${it.id}" data-h="${h}" aria-label="Objetivo estratégico do item ${i+1}">${opcoesObjetivo(it.objetivo)}</select>
+    </div>
+    <div class="grade-campos">
+      <div>
+        <label class="campo">Competência-foco <span class="mudo" style="font-weight:400">— obrigatória</span></label>
+        <select data-plano="comp" data-pid="${it.id}" data-h="${h}" aria-label="Competência-foco do item ${i+1}">${opcoesComp(it.comp)}</select>
+      </div>
+      <div>
+        <label class="campo">Meta (nível alvo)</label>
+        <input type="text" data-plano="meta" data-pid="${it.id}" data-h="${h}" aria-label="Meta do item ${i+1}" value="${esc(it.meta)}" placeholder="Ex.: nota 7 em riscos">
+      </div>
+      <div>
+        <label class="campo">Prazo</label>
+        <input type="date" data-plano="prazo" data-pid="${it.id}" data-h="${h}" aria-label="Prazo do item ${i+1}" value="${esc(it.prazo)}">
+      </div>
+    </div>
+    <div style="margin-top:.6rem">
+      <label class="campo">Ação concreta <span class="mudo" style="font-weight:400">— verbo + objeto + contexto</span></label>
+      <textarea data-plano="acao" data-pid="${it.id}" data-h="${h}" aria-label="Ação concreta do item ${i+1}" style="min-height:62px" placeholder="Ex.: facilitar oficina de identificação e análise qualitativa de riscos em 2 projetos, com registro no RAID log revisado pelo PMO.">${esc(it.acao)}</textarea>
+    </div>
+    <div class="grade-campos" style="margin-top:.6rem;grid-template-columns:1fr .55fr">
+      <div>
+        <label class="campo">Indicador de acompanhamento</label>
+        <input type="text" data-plano="indicador" data-pid="${it.id}" data-h="${h}" aria-label="Indicador de acompanhamento do item ${i+1}" value="${esc(it.indicador)}" placeholder="Ex.: 2 oficinas realizadas + registro aprovado na revisão do PMO">
+      </div>
+      <div>
+        <label class="campo">Status</label>
+        <select data-plano="status" data-pid="${it.id}" data-h="${h}" aria-label="Status do item ${i+1}">
+          ${STATUS.map(s=>`<option ${it.status===s?'selected':''}>${s}</option>`).join('')}
+        </select>
+      </div>
+    </div>
+  </div>`;
+}
+
+function renderStatusPlano(){
+  const alvo=$('#pendenciaPlano'); if(!alvo) return;
+  const pend=quadrantesPendentes();
+  const todos=todosObjetivos().filter(o=>o.texto&&o.texto.trim().length>=8);
+  const itens=HORIZONTES.flatMap(h=>estado.plano[h.id]);
+  const semVinculo=itens.filter(i=>!itemAlinhado(i)).length;
+  if(!pend.length && !semVinculo && todos.length){
+    alvo.innerHTML = '<div class="aviso dica"><strong>Tudo alinhado:</strong> matriz SWOT com objetivos nas quatro estratégias e todas as ações vinculadas a um objetivo e a uma competência. Este é o padrão de qualidade esperado nesta etapa.</div>';
+    return;
+  }
+  let html='';
+  if(pend.length){
+    html += '<div class="aviso atencao"><strong>Plano bloqueado para novas ações.</strong> Falta definir objetivos nas estratégias: '+pend.map(q=>'<strong>'+q.id+'</strong> ('+esc(q.par)+')').join(', ')+'. <button class="botao pequeno" type="button" data-ir="swot" style="margin-left:.4rem">Ir aos objetivos →</button></div>';
+  }
+  if(semVinculo){
+    html += '<div class="aviso"><strong>'+semVinculo+' ação(ões) sem alinhamento completo.</strong> Cada ação precisa de um objetivo estratégico e de uma competência do catálogo. Itens pendentes aparecem com borda amarela.</div>';
+  }
+  alvo.innerHTML = html;
+}
+
+function renderPlano(){
+  const alvo=$('#horizontes');
+  alvo.innerHTML = HORIZONTES.map(h=>{
+    const itens=estado.plano[h.id];
+    return `
+    <div class="horizonte" id="hor-${h.id}">
+      <div class="aviso dica" style="margin-bottom:.9rem"><strong>${h.nome} (${h.janela}):</strong> ${h.dica}</div>
+      <div>${itens.length ? itens.map((it,i)=>htmlItem(it,i,h.id)).join('') : '<div class="vazio">Nenhum item neste horizonte ainda. Comece com uma ação pequena e verificável.</div>'}</div>
+      <button class="botao sec" type="button" data-add="${h.id}">+ Adicionar item de ${h.nome.toLowerCase()}</button>
+    </div>`;
+  }).join('');
+  mostrarHorizonte();
+  renderKpisPlano();
+  renderStatusPlano();
+}
+
+function mostrarHorizonte(){
+  const h = estado.ui.horizonte || 'curto';
+  $$('.horizonte').forEach(el=>el.classList.toggle('ativo', el.id==='hor-'+h));
+  $$('[data-horizonte]').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.horizonte===h)));
+}
+
+function renderKpisPlano(){
+  const alvo=$('#kpisPlano'); if(!alvo) return;
+  const itens = HORIZONTES.flatMap(h=>estado.plano[h.id]);
+  const tot = itens.length;
+  const comIndicador = itens.filter(i=>i.indicador.trim()).length;
+  const concluidos = itens.filter(i=>i.status==='Concluído').length;
+  const alinhados = itens.filter(itemAlinhado).length;
+  const prazos = itens.filter(i=>i.prazo).map(i=>i.prazo).sort();
+  const obsComAcao = new Set(itens.filter(itemAlinhado).map(i=>i.objetivo));
+  const obs = todosObjetivos().filter(o=>o.texto&&o.texto.trim().length>=8);
+  alvo.innerHTML = `
+    <div class="kpi"><div class="rot">Itens no plano</div><div class="val">${tot}</div><div class="nota">${HORIZONTES.map(h=>h.nome.split(' ')[0]+': '+estado.plano[h.id].length).join(' · ')}</div></div>
+    <div class="kpi"><div class="rot">Alinhamento</div><div class="val">${tot?Math.round(alinhados/tot*100):0}%</div><div class="nota">${alinhados}/${tot} com objetivo + competência</div></div>
+    <div class="kpi"><div class="rot">Objetivos com ação</div><div class="val">${obsComAcao.size}<span style="font-size:.9rem;color:var(--ink-3)">/${obs.length}</span></div><div class="nota">${obs.length-obsComAcao.size} objetivo(s) sem ação</div></div>
+    <div class="kpi"><div class="rot">Com indicador</div><div class="val">${comIndicador}</div><div class="nota">${tot?Math.round(comIndicador/tot*100):0}% dos itens</div></div>
+    <div class="kpi"><div class="rot">Concluídos</div><div class="val">${concluidos}</div><div class="nota">marque o status ao revisar</div></div>
+    <div class="kpi"><div class="rot">Próximo prazo</div><div class="val" style="font-size:1.1rem">${prazos.length?prazos[0].split('-').reverse().join('/'):'—'}</div><div class="nota">revisão sugerida a cada 90 dias</div></div>`;
+  atualizarProgresso();
+}
+
+document.addEventListener('click', e=>{
+  const add=e.target.closest('[data-add]');
+  if(add){
+    const h=add.dataset.add;
+    if(!objetivosCompletos()){
+      const pend=quadrantesPendentes().map(q=>q.id).join(', ');
+      toast('Antes de criar ações, defina objetivos na etapa 2.2 (pendente: '+pend+').');
+      const alvo=document.getElementById('blocoObjetivos');
+      if(alvo){ irPara('swot'); setTimeout(()=>alvo.scrollIntoView({behavior:'smooth',block:'start'}),300); }
+      return;
+    }
+    estado.plano[h].push(novoItem(h));
+    estado.ui.horizonte=h;
+    renderPlano(); salvar();
+    const novos=$$('#hor-'+h+' .item-plano'); const ultimo=novos[novos.length-1];
+    if(ultimo && ultimo.scrollIntoView) ultimo.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  const rem=e.target.closest('[data-remover]');
+  if(rem){
+    const h=rem.dataset.h, id=rem.dataset.remover;
+    if(!confirm('Remover este item do plano?')) return;
+    estado.plano[h]=estado.plano[h].filter(i=>i.id!==id);
+    renderPlano(); salvar(); return;
+  }
+});
+
+/* Campos do plano */
+function tratarCampoPlano(t){
+  const pid=t.dataset.pid, h=t.dataset.h, campo=t.dataset.plano;
+  const item=(estado.plano[h]||[]).find(i=>i.id===pid);
+  if(!item) return;
+  item[campo]=t.value;
+  if(campo==='objetivo' || campo==='comp'){
+    const card=t.closest('.item-plano');
+    if(card){
+      const ok=itemAlinhado(item);
+      card.style.borderLeftColor = ok?'#0f766e':'#f59e0b';
+      const badge=card.querySelector('[data-badge]');
+      if(badge){ badge.className='etiqueta '+(ok?'ok':'foco'); badge.textContent=ok?'alinhada':'alinhamento pendente'; }
+    }
+    renderStatusPlano();
+  }
+  salvar();
+  renderKpisPlano();
+}
+document.addEventListener('input', e=>{ if(e.target.matches('[data-plano]')) tratarCampoPlano(e.target); });
+document.addEventListener('change', e=>{ if(e.target.matches('[data-plano]')) tratarCampoPlano(e.target); });
+
+/* ================================================================
+   7) ETAPA 4 — RESUMO, GRÁFICO, DIAGNÓSTICO E EXPORTAÇÃO
+   ================================================================ */
+function listaOrdenada(){
+  const arr = CATALOGO.map((c,i)=>({
+    c, i, auto:num(estado.comps[c.id].auto), par:num(estado.comps[c.id].par),
+    gestor:num(estado.comps[c.id].gestor), ext:mediaExterna(c.id), gap:gapComp(c.id),
+    foco:estado.comps[c.id].foco, obs:estado.comps[c.id].obs
+  }));
+  const o=estado.ui.ordem;
+  if(o==='auto-desc') arr.sort((a,b)=>(b.auto??-1)-(a.auto??-1));
+  else if(o==='auto-asc') arr.sort((a,b)=>(a.auto??99)-(b.auto??99));
+  else if(o==='gap-desc') arr.sort((a,b)=>(b.gap??-99)-(a.gap??-99));
+  else if(o==='gap-asc') arr.sort((a,b)=>(a.gap??99)-(b.gap??99));
+  else arr.sort((a,b)=>a.i-b.i);
+  return arr;
+}
+
+function renderResumo(){
+  const arr = listaOrdenada();
+  const comAuto = arr.filter(x=>x.auto!==null);
+  const comExt  = arr.filter(x=>x.ext!==null);
+  const gaps    = arr.filter(x=>x.gap!==null);
+
+  /* KPIs */
+  const mediaAuto = media(comAuto.map(x=>x.auto));
+  const mediaExt  = media(comExt.map(x=>x.ext));
+  const gapMedio  = gaps.length? Math.round(media(gaps.map(x=>x.gap))*10)/10 : null;
+  const superest  = gaps.filter(x=>x.gap>=1).length;
+  const subest    = gaps.filter(x=>x.gap<=-1).length;
+  const itensPlano = HORIZONTES.flatMap(h=>estado.plano[h.id]);
+  const itensAlin = itensPlano.filter(itemAlinhado).length;
+  const pctAlin = itensPlano.length ? Math.round(itensAlin/itensPlano.length*100) : 0;
+  const obsOk = todosObjetivos().filter(o=>o.texto&&o.texto.trim().length>=8);
+  $('#kpisResumo').innerHTML = `
+    <div class="kpi"><div class="rot">Avaliadas</div><div class="val">${comAuto.length}<span style="font-size:.9rem;color:var(--ink-3)">/${CATALOGO.length}</span></div><div class="nota">com autoavaliação</div></div>
+    <div class="kpi"><div class="rot">Média auto</div><div class="val">${mediaAuto!==null?fmt(mediaAuto):'—'}</div><div class="nota">escala 0–10</div></div>
+    <div class="kpi"><div class="rot">Média externa</div><div class="val">${mediaExt!==null?fmt(mediaExt):'—'}</div><div class="nota">${comExt.length} com feedback</div></div>
+    <div class="kpi"><div class="rot">Gap médio</div><div class="val">${gapMedio!==null?(gapMedio>0?'+':'')+fmt(gapMedio):'—'}</div><div class="nota">auto − externa</div></div>
+    <div class="kpi"><div class="rot">Divergências ≥1 ponto</div><div class="val">${superest+subest}</div><div class="nota">${superest} acima · ${subest} abaixo</div></div>
+    <div class="kpi"><div class="rot">Alinhamento do plano</div><div class="val">${pctAlin}%</div><div class="nota">${itensAlin}/${itensPlano.length} ações · ${obsOk.length} objetivos</div></div>`;
+
+  /* Gráfico de barras agrupadas (com filtro por grupo do catálogo) */
+  const g = estado.ui.grupoGrafico || 'todos';
+  const arrGraf = arr.filter(x=>{
+    if(g==='desempenho'||g==='pessoal'||g==='complementar') return x.c.gru===g;
+    if(g==='foco') return x.foco;
+    return true;
+  });
+  $('#grafico').innerHTML = arrGraf.length ? arrGraf.map(x=>{
+    const barra=(tipo,v)=>`<div class="barra ${tipo} ${v===null?'vazia':''}" title="${tipo==='auto'?'Autoavaliação':tipo==='par'?'Pares':'Gestores'}: ${v===null?'não preenchido':fmt(v)}">
+        <i style="width:${v===null?100:(v/10*100)}%"></i><span class="val">${v===null?'—':fmt(v)}</span></div>`;
+    return `<div class="graf-linha">
+      <div class="graf-rot">${esc(x.c.nome)}<span class="g-ref">${x.c.ref}${x.foco?' · foco':''}</span></div>
+      <div class="graf-barras">${barra('auto',x.auto)}${barra('par',x.par)}${barra('ges',x.gestor)}</div>
+    </div>`;
+  }).join('') : '<div class="vazio">Nenhuma competência neste filtro.</div>';
+
+  renderTabelaResumo();
+  renderDiagnostico(arr);
+  renderResumoSwot();
+  renderConsistencia();
+  renderChecklist();
+}
+
+/* Matriz de consistência estratégica */
+function renderConsistencia(){
+  const alvo=$('#matrizConsistencia'); if(!alvo) return;
+  const obs = todosObjetivos();
+  const itens = HORIZONTES.flatMap(h=>estado.plano[h.id].map(i=>({...i, horizonte:h.id})));
+  const acoesDoObjetivo = id => itens.filter(i=>i.objetivo===id);
+
+  /* 1. Tabela objetivo → ações → competência */
+  const linhas = obs.length ? obs.map(o=>{
+    const acoes = acoesDoObjetivo(o.id);
+    const comp = o.comp && POR_ID[o.comp] ? POR_ID[o.comp].nome : (o.comp==='outra'?'Outra (fora do catálogo)':'—');
+    const prazo = o.prazo ? o.prazo.split('-').reverse().join('/') : '—';
+    return `<tr>
+      <td><strong>${o.codigo}</strong><br><span class="mudo" style="font-size:.76rem">${esc(o.quadNome)}</span></td>
+      <td>${o.texto?esc(o.texto):'<span class="mudo">sem descrição</span>'}<br><span class="mudo" style="font-size:.76rem">Prazo-alvo: ${prazo}${o.indicador?' · Indicador: '+esc(o.indicador):''}</span></td>
+      <td>${esc(comp)}</td>
+      <td class="num">${acoes.length}</td>
+      <td>${acoes.length?'<span class="etiqueta ok">com ação</span>':'<span class="etiqueta foco">sem ação</span>'}</td>
+    </tr>`;
+  }).join('') : '<tr><td colspan="5" class="mudo">Nenhum objetivo definido ainda. Volte à etapa 2.2.</td></tr>';
+
+  /* 2. Pendências */
+  const pendQuad = quadrantesPendentes();
+  const semAcao = obs.filter(o=>o.texto && o.texto.trim().length>=8 && acoesDoObjetivo(o.id).length===0);
+  const semVinculo = itens.filter(i=>!itemAlinhado(i));
+  const competenciasFocoSemAcao = CATALOGO.filter(c=>{
+    const d=estado.comps[c.id];
+    const notaBaixa = num(d.auto)!==null && num(d.auto)<=5;
+    return (d.foco || notaBaixa) && !itens.some(i=>i.comp===c.id);
+  });
+
+  const bloco=(titulo, itensTxt, tipo)=> itensTxt.length
+    ? `<div class="aviso ${tipo}" style="margin:.5rem 0"><strong>${titulo}</strong><ul class="lista" style="margin:.35rem 0 0">${itensTxt.map(t=>'<li>'+t+'</li>').join('')}</ul></div>`
+    : '';
+
+  alvo.innerHTML = `
+    <div class="rolagem" style="max-height:none;margin-bottom:.6rem">
+      <table class="tabela">
+        <thead><tr><th>Objetivo</th><th>Enunciado / prazo</th><th>Competência-âncora</th><th style="text-align:right">Ações</th><th>Situação</th></tr></thead>
+        <tbody>${linhas}</tbody>
+      </table>
+    </div>
+    ${pendQuad.length?bloco('Estratégias sem objetivo definido', pendQuad.map(q=>'<strong>'+q.id+'</strong> — '+esc(q.par)+': '+esc(q.pergunta)), 'atencao'):''}
+    ${semAcao.length?bloco('Objetivos sem nenhuma ação no plano', semAcao.map(o=>'<strong>'+o.codigo+'</strong> — '+esc(o.texto.slice(0,90))), 'atencao'):''}
+    ${semVinculo.length?bloco('Ações com alinhamento incompleto', semVinculo.map(i=>{
+        const nome = i.comp && POR_ID[i.comp] ? POR_ID[i.comp].nome : 'sem competência';
+        return (i.acao?esc(i.acao.slice(0,80)):'(ação sem descrição)')+' — <em>'+esc(nome)+'</em>'+(i.objetivo?'':' · falta objetivo');
+      }), '') : ''}
+    ${competenciasFocoSemAcao.length?bloco('Competências marcadas como foco (ou com nota ≤5) sem ação no plano', competenciasFocoSemAcao.map(c=>esc(c.nome)+' (auto '+(num(estado.comps[c.id].auto)===null?'—':fmt(num(estado.comps[c.id].auto)))+')'), 'dica'):''}
+    ${(!pendQuad.length && !semAcao.length && !semVinculo.length && obs.length)?'<div class="aviso dica"><strong>Matriz consistente:</strong> todas as estratégias têm objetivo, todos os objetivos têm ação e todas as ações estão vinculadas a uma competência do catálogo.</div>':''}
+  `;
+}
+
+function renderTabelaResumo(){
+  const arr = listaOrdenada();
+  $('#tabelaResumo tbody').innerHTML = arr.map(x=>{
+    const cel=v=>`<td class="num">${v===null?'—':fmt(v)}</td>`;
+    const g=x.gap===null?'<td class="num">—</td>':`<td class="num ${x.gap>0?'gap-pos':x.gap<0?'gap-neg':''}">${x.gap>0?'+':''}${fmt(x.gap)}</td>`;
+    return `<tr>
+      <td><strong>${esc(x.c.nome)}</strong><br><span class="mudo">${esc(x.c.en)}</span>${x.obs?'<br><span class="mudo" style="font-size:.76rem">'+esc(x.obs.slice(0,110))+(x.obs.length>110?'…':'')+'</span>':''}</td>
+      <td><span class="etiqueta ${x.c.gru==='desempenho'?'des':'pes'}">${x.c.gru==='desempenho'?'Desemp.':'Pessoal'}</span></td>
+      ${cel(x.auto)}${cel(x.par)}${cel(x.gestor)}${cel(x.ext)}${g}
+      <td>${x.foco?'<span class="etiqueta foco">foco</span>':'<span class="mudo">—</span>'}</td>
+    </tr>`;
+  }).join('');
+}
+
+function renderDiagnostico(arr){
+  const comAuto=arr.filter(x=>x.auto!==null);
+  const gaps=arr.filter(x=>x.gap!==null);
+  if(!comAuto.length){
+    $('#diagnostico').innerHTML='<div class="vazio">Sem dados ainda. Preencha o mapeamento para gerar a leitura.</div>';
+    return;
+  }
+  const fortes=comAuto.slice().sort((a,b)=>(b.auto??0)-(a.auto??0)).slice(0,3);
+  const fracas=comAuto.slice().sort((a,b)=>(a.auto??0)-(b.auto??0)).slice(0,3);
+  const superest=gaps.filter(x=>x.gap>=1).sort((a,b)=>b.gap-a.gap).slice(0,3);
+  const subest=gaps.filter(x=>x.gap<=-1).sort((a,b)=>a.gap-b.gap).slice(0,3);
+  const nFocos=CATALOGO.filter(c=>estado.comps[c.id].foco).length;
+
+  let txt = `<p><strong>Base do perfil:</strong> ${comAuto.length} de ${CATALOGO.length} competências avaliadas${gaps.length?' · '+gaps.length+' com feedback externo':''}.</p>`;
+  txt += `<p><strong>Forças declaradas:</strong> ${fortes.map(x=>esc(x.c.nome)+' ('+fmt(x.auto)+')').join(', ')}.</p>`;
+  txt += `<p><strong>Lacunas declaradas:</strong> ${fracas.map(x=>esc(x.c.nome)+' ('+fmt(x.auto)+')').join(', ')}.</p>`;
+  if(superest.length) txt += `<p><strong>Possível superestimação</strong> (auto ≥ externo + 1): ${superest.map(x=>esc(x.c.nome)+' ('+(x.gap>0?'+':'')+fmt(x.gap)+')').join(', ')}. Vale investigar ponto cego: peça um exemplo concreto a quem avaliou.</p>`;
+  if(subest.length) txt += `<p><strong>Possível subestimação</strong> (auto ≤ externo − 1): ${subest.map(x=>esc(x.c.nome)+' ('+fmt(x.gap)+')').join(', ')}. Pode ser autoexigência ou baixa visibilidade do seu trabalho — comunique melhor o que faz.</p>`;
+  if(!gaps.length) txt += `<p class="mudo">Sem feedback externo registrado: a leitura é apenas declarada. O próprio PMCD recomenda compensar a autoavaliação com avaliação de pares ou gestores.</p>`;
+  txt += `<p style="margin-bottom:0"><strong>Situação do plano:</strong> ${nFocos} competência(s)-foco, ${HORIZONTES.reduce((n,h)=>n+estado.plano[h.id].length,0)} item(ns) de ação registrados.</p>`;
+  $('#diagnostico').innerHTML = txt;
+}
+
+function renderResumoSwot(){
+  const s=estado.swot;
+  const bloco=(t,v,cls)=>`<div style="margin-bottom:.6rem"><span class="etiqueta ${cls}">${t}</span><p style="margin:.25rem 0 0;font-size:.86rem;white-space:pre-wrap">${v?esc(v):'<span class="mudo">não preenchido</span>'}</p></div>`;
+  $('#resumoSwot').innerHTML =
+    bloco('Forças', s.forcas,'des')+bloco('Fraquezas', s.fraquezas,'pes')+
+    bloco('Oportunidades', s.oportunidades,'n')+bloco('Ameaças', s.ameacas,'foco')+
+    (s.sintese?`<div><span class="etiqueta ok">Síntese</span><p style="margin:.25rem 0 0;font-size:.86rem;white-space:pre-wrap">${esc(s.sintese)}</p></div>`:'')+
+    `<div style="margin-top:.7rem"><span class="etiqueta obj">Objetivos estratégicos</span>
+      ${QUADRANTES.map(q=>{
+        const l=(estado.objetivos[q.id]||[]).filter(o=>o.texto&&o.texto.trim());
+        return '<p style="margin:.35rem 0 0;font-size:.84rem"><strong>'+q.id+' ('+esc(q.par)+'):</strong> '+(l.length?l.map((o,i)=>esc(o.texto)).join(' · '):'<span class="mudo">não definido</span>')+'</p>';
+      }).join('')}
+    </div>`;
+}
+
+/* ================================================================
+   8) ETAPA 5 — PENSAMENTO CRÍTICO
+   ================================================================ */
+const BLOCOS = [
+  { titulo:'A. Limites de um modelo de autoavaliação', intro:'O PMCD Framework classifica a autoavaliação como a abordagem de menor rigor: útil para planejamento de desenvolvimento, frágil como medida de competência.',
+    perguntas:[
+      { id:'q1', t:'Suas notas medem desempenho ou autoimagem?', p:'Em que medida as notas que você atribuiu descrevem algo que você efetivamente demonstrou em projetos — e em que medida descrevem a percepção que você tem de si? Que decisões de carreira você evitaria tomar usando apenas esses dados?' },
+      { id:'q2', t:'A ferramenta mede competência ou competência declarada?', p:'O que mudaria no seu mapa se outra pessoa (um par, seu gestor) preenchesse as mesmas 16 notas sobre você? Quais competências provavelmente mudariam mais, e por quê?' }
+    ]},
+  { titulo:'B. Vieses de autopercepção', intro:'Quem tem pouca competência tende a superestimar-se; quem tem muita tende a subestimar-se. Somam-se a isso ancoragem, desejabilidade social e o efeito de comparar-se apenas com o próprio grupo.',
+    perguntas:[
+      { id:'q3', t:'Onde estão seus pontos cegos — e onde o feedback também engana?', p:'Identifique no seu mapa uma competência em que você desconfia de superestimação e outra de subestimação. Como o feedback de pares e gestores ajuda nisso? Em que situações ele também distorce (gentileza, viés de halo, política interna, avaliação de quem convive pouco com você)?' },
+      { id:'q4', t:'Metas suas ou metas esperadas?', p:'Suas competências-foco e metas refletem o que você quer desenvolver ou o que se espera de “um bom gerente de projetos”? Qual seria sua meta se ninguém fosse ler este documento?' }
+    ]},
+  { titulo:'C. Competência declarada × competência comprovada', intro:'No PMCD, cada elemento de competência tem critérios de desempenho, expectativas e fontes de evidência — documentos, entregas e observação de terceiros.',
+    perguntas:[
+      { id:'q5', t:'Declarada, demonstrada, comprovada: qual é a diferença no seu caso?', p:'Escolha sua maior lacuna e descreva os três níveis: o que você diz saber, o que já fez, e o que você consegue provar com artefatos (plano, EAP, registro de riscos, relatório, ata, avaliação de terceiros).' },
+      { id:'q6', t:'Você conseguiria sustentar suas três maiores notas com evidências?', p:'Se um recrutador ou um comitê de promoção pedisse prova das suas três notas mais altas, o que você apresentaria? Se a evidência não existir, a nota deveria cair — e o que isso revela sobre o instrumento?' }
+    ]},
+  { titulo:'D. Contextos de utilidade e de insuficiência', intro:'Nenhum instrumento serve para tudo: a mesma ferramenta que organiza uma reflexão pessoal é inadequada para comparar pessoas ou decidir promoções.',
+    perguntas:[
+      { id:'q7', t:'Para que serve e para que não serve?', p:'Liste dois contextos em que esta ferramenta é adequada (ex.: conversa de desenvolvimento com o gestor, preparação para assumir projeto maior) e dois em que é insuficiente ou arriscada (ex.: seleção, promoção, alocação em projeto crítico, avaliação de desempenho formal). Justifique.' },
+      { id:'q8', t:'O que mudaria em contexto organizacional?', p:'Se sua organização adotasse este mapeamento, que adaptações seriam necessárias — níveis indicativos por cargo, cultura local, tipo e complexidade dos projetos, senioridade, critérios do PMO? Quem deveria validar as notas?' }
+    ]},
+  { titulo:'E. Como complementar: 360º e evidências de projeto', intro:'O próprio PMCD recomenda que a autoavaliação seja seguida por avaliação de pares ou gestores, e que se compare a autoimagem com a percepção de terceiros.',
+    perguntas:[
+      { id:'q9', t:'Como desenhar um 360º mínimo e ético?', p:'Quem você convidaria, quantas pessoas, com quais perguntas e com que garantia de anonimato? Quais riscos existem em coletar feedback interno (retaliação, política, avaliação por simpatia) e como mitigá-los?' },
+      { id:'q10', t:'Que evidências você produz nos próximos 90 dias?', p:'Para cada competência-foco do seu plano, qual artefato ou observação comprovará o avanço? Quem pode validá-lo (gestor, PMO, cliente, par) e quando essa validação acontecerá?' }
+    ]},
+  { titulo:'F. O que o PMCD não cobre: o módulo do século XXI', intro:'O PMCD Framework é de 2017, anterior à IA generativa em escala, ao debate ESG no nível do projeto e a marcos regulatórios brasileiros como a atualização da NR-1. Nenhum framework acompanha o ritmo do mercado — esta é justamente a parte que exige julgamento.',
+    perguntas:[
+      { id:'q11', t:'Quais competências complementares são críticas — e quais são moda?', p:'Das 16 competências do módulo século XXI (IA, dados, ESG, acumen de negócios, negociação, liderança híbrida, riscos psicossociais etc.), quais são realmente decisivas para o seu setor e o seu próximo passo de carreira? Quais parecem relevantes apenas porque estão em alta? Como você separaria uma coisa da outra?' },
+      { id:'q12', t:'Como decidir o que estudar se os frameworks sempre chegam atrasados?', p:'Que evidências você usaria para decidir onde investir tempo: exigências reais das vagas que você quer, demandas dos seus clientes/patrocinadores, obrigações legais (NR-1, LGPD), lacunas apontadas no seu feedback? O que aconteceria se você estudasse só o que o PMCD cobre?' }
+    ]},
+  { titulo:'G. Da matriz SWOT ao plano: estratégia ou checklist?', intro:'A matriz cruzada (FO/WO/FA/WT) dá rigor à SWOT, mas também pode produzir frases genéricas e objetivos que ninguém consegue verificar.',
+    perguntas:[
+      { id:'q13', t:'Seus quatro objetivos são realmente distintos?', p:'Leia seus objetivos FO, WO, FA e WT lado a lado: existem diferenças reais de direção ou quatro versões da mesma frase? Qual objetivo você não conseguiria cumprir sem mudar algo concreto no seu trabalho? O que aconteceria se a estratégia de sobrevivência (WT) simplesmente não existisse?' },
+      { id:'q14', t:'O que prova que um objetivo é estratégico e não um desejo?', p:'Pegue o objetivo com maior nota de prioridade e teste: ele tem prazo, indicador, competência associada e uma ação que depende de você (não só da empresa)? Como você revisaria esse objetivo se, em 90 dias, nenhuma ação tivesse saído do papel?' }
+    ]}
+];
+
+function renderCritico(){
+  $('#blocosCriticos').innerHTML = BLOCOS.map((b,bi)=>`
+    <div class="cartao bloco-tema">
+      <h3><span class="etiqueta des">${String.fromCharCode(65+bi)}</span> ${esc(b.titulo.split('. ')[1]||b.titulo)}</h3>
+      <p class="mudo" style="max-width:80ch">${esc(b.intro)}</p>
+      ${b.perguntas.map(q=>`
+        <div class="pergunta">
+          <span class="nm" aria-hidden="true">${q.id.replace('q','')}</span>
+          <div>
+            <h4>${esc(q.t)}</h4>
+            <p>${esc(q.p)}</p>
+            <label class="sr" for="crit-${q.id}">Sua resposta para: ${esc(q.t)}</label>
+            <textarea id="crit-${q.id}" data-critico="${q.id}" placeholder="Registre sua resposta / as conclusões do grupo…">${esc(estado.critico[q.id]||'')}</textarea>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+  const sg=$('#sinteseCritica'); if(sg) sg.value = estado.critico.sinteseGeral||'';
+}
+
+/* Checklist de evidências ligado aos focos do plano */
+function compsDoPlano(){
+  const ids=[];
+  HORIZONTES.forEach(h=>estado.plano[h.id].forEach(i=>{ if(i.comp && POR_ID[i.comp] && !ids.includes(i.comp)) ids.push(i.comp); }));
+  CATALOGO.filter(c=>estado.comps[c.id].foco).forEach(c=>{ if(!ids.includes(c.id)) ids.push(c.id); });
+  return ids;
+}
+function renderChecklist(){
+  const ids = compsDoPlano();
+  const alvo = $('#checklistEvidencias'); if(!alvo) return;
+  if(!ids.length){
+    alvo.innerHTML = '<div class="vazio">Marque focos no mapeamento ou adicione itens ao plano para gerar o checklist de evidências.</div>';
+    return;
+  }
+  alvo.innerHTML = ids.map(id=>{
+    const c=POR_ID[id], d=estado.comps[id];
+    const fonte = c.gru==='desempenho'
+      ? 'artefatos que você produziu (termo de abertura, plano, EAP, cronograma, registro de riscos, relatórios, atas de mudança) + validação por gestor/PMO'
+      : 'comportamento observado por terceiros (feedback escrito, avaliação de pares, registro de situações) + resultado gerado';
+    return `<div style="border:1px solid var(--line);border-radius:9px;padding:.7rem;margin-bottom:.6rem;background:#fbfcfe">
+      <div style="display:flex;gap:.5rem;align-items:baseline;flex-wrap:wrap">
+        <strong style="font-size:.92rem">${esc(c.nome)}</strong>
+        <span class="etiqueta ${c.gru==='desempenho'?'des':'pes'}">${c.ref}</span>
+        <span class="mudo">auto ${d.auto===null?'—':fmt(d.auto)}/10</span>
+      </div>
+      <p class="mudo" style="margin:.3rem 0 .4rem;font-size:.8rem"><strong>Evidência típica no PMCD:</strong> ${fonte}</p>
+      <label class="sr" for="ev-${id}">Evidência que vou produzir para ${esc(c.nome)}</label>
+      <input type="text" id="ev-${id}" data-critico="ev_${id}" value="${esc(estado.critico['ev_'+id]||'')}" placeholder="Ex.: registro de riscos do projeto Beta revisado em 12/03, com plano de resposta aprovado pelo patrocinador">
+    </div>`;
+  }).join('');
+}
+
+/* ================================================================
+   9) RELATÓRIO E EXPORTAÇÃO
+   ================================================================ */
+function relatorioTexto(){
+  const L=[];
+  const linha='='.repeat(74);
+  L.push(linha,'PLANEJAMENTO DE DESENVOLVIMENTO DE CARREIRA — GERENTE DE PROJETOS','Versão 2: catálogo PMI PMCD Framework (3ª ed.) + módulo de competências do século XXI','Gerado em: '+hoje(),linha,'');
+
+  L.push('1. PERFIL');
+  L.push('Nome: '+(estado.meta.nome||'—'));
+  L.push('Cargo/função: '+(estado.meta.cargo||'—'));
+  L.push('Organização/setor: '+(estado.meta.org||'—'));
+  L.push('Objetivo de carreira (3 anos): '+(estado.meta.objetivo||'—'),'');
+
+  L.push('2. MAPEAMENTO DE COMPETÊNCIAS (escala 0–10)');
+  L.push('Competência | Grupo | Ref | Auto | Par | Gestor | Média ext. | Gap');
+  CATALOGO.forEach(c=>{
+    const d=estado.comps[c.id], ext=mediaExterna(c.id), g=gapComp(c.id);
+    L.push([c.nome, c.gru==='desempenho'?'Desempenho':'Pessoal', c.ref,
+      num(d.auto)===null?'—':fmt(d.auto), num(d.par)===null?'—':fmt(d.par),
+      num(d.gestor)===null?'—':fmt(d.gestor), ext===null?'—':fmt(ext),
+      g===null?'—':(g>0?'+':'')+fmt(g)].join(' | ')+ (d.foco?'  [FOCO]':''));
+    if(d.obs) L.push('    Observações: '+d.obs.replace(/\n/g,' '));
+  });
+  L.push('');
+
+  const arr=CATALOGO.map(c=>({c,auto:num(estado.comps[c.id].auto),ext:mediaExterna(c.id)}))
+    .filter(x=>x.auto!==null).sort((a,b)=>b.auto-a.auto);
+  if(arr.length){
+    L.push('3. LEITURA DO RESULTADO');
+    L.push('Notas mais altas: '+arr.slice(0,3).map(x=>x.c.nome+' ('+fmt(x.auto)+')').join('; '));
+    L.push('Notas mais baixas: '+arr.slice(-3).reverse().map(x=>x.c.nome+' ('+fmt(x.auto)+')').join('; '));
+    const gs=CATALOGO.map(c=>({c,g:gapComp(c.id)})).filter(x=>x.g!==null).sort((a,b)=>Math.abs(b.g)-Math.abs(a.g));
+    if(gs.length) L.push('Maiores divergências com o feedback externo: '+gs.slice(0,3).map(x=>x.c.nome+' ('+(x.g>0?'+':'')+fmt(x.g)+')').join('; '));
+    else L.push('Feedback externo: não registrado (leitura apenas declarada).');
+    L.push('');
+  }
+
+  L.push('4. ANÁLISE SWOT PESSOAL');
+  L.push('FORÇAS:'); L.push(estado.swot.forcas||'(não preenchido)');
+  L.push('FRAQUEZAS:'); L.push(estado.swot.fraquezas||'(não preenchido)');
+  L.push('OPORTUNIDADES:'); L.push(estado.swot.oportunidades||'(não preenchido)');
+  L.push('AMEAÇAS:'); L.push(estado.swot.ameacas||'(não preenchido)');
+  L.push('SÍNTESE:'); L.push(estado.swot.sintese||'(não preenchido)'); L.push('');
+
+  L.push('5. OBJETIVOS ESTRATÉGICOS (MATRIZ CRUZADA DA SWOT)');
+  QUADRANTES.forEach(q=>{
+    const lista=(estado.objetivos[q.id]||[]).filter(o=>o.texto&&o.texto.trim());
+    L.push('   '+q.id+' — '+q.nome+' ('+q.par+')');
+    if(!lista.length){ L.push('      (sem objetivo definido)'); }
+    lista.forEach((o,i)=>{
+      const comp = o.comp==='outra' ? 'Outra (fora do catálogo)' : (POR_ID[o.comp]?POR_ID[o.comp].nome:'—');
+      L.push('      '+q.id+'-'+(i+1)+': '+o.texto);
+      L.push('         Competência-âncora: '+comp+' · Prazo-alvo: '+(o.prazo?o.prazo.split('-').reverse().join('/'):'—'));
+      if(o.indicador) L.push('         Indicador: '+o.indicador);
+    });
+  });
+  L.push('');
+
+  L.push('6. PLANO DE AÇÃO');
+  HORIZONTES.forEach(h=>{
+    L.push('— '+h.nome.toUpperCase()+' ('+h.janela+')');
+    const itens=estado.plano[h.id];
+    if(!itens.length){ L.push('   (sem itens)'); }
+    itens.forEach((it,i)=>{
+      const nome = it.comp==='outra' ? 'Outra competência' : (POR_ID[it.comp]?POR_ID[it.comp].nome:'—');
+      const obj = todosObjetivos().find(o=>o.id===it.objetivo);
+      L.push('   '+(i+1)+') Objetivo: '+(obj? obj.codigo+' — '+obj.texto : '(SEM VÍNCULO COM OBJETIVO)'));
+      L.push('      Competência-foco: '+nome);
+      L.push('      Alinhamento: '+(itemAlinhado(it)?'completo (objetivo + competência)':'INCOMPLETO'));
+      L.push('      Meta: '+(it.meta||'—'));
+      L.push('      Ação: '+(it.acao||'—').replace(/\n/g,' '));
+      L.push('      Prazo: '+(it.prazo?it.prazo.split('-').reverse().join('/'):'—'));
+      L.push('      Indicador: '+(it.indicador||'—'));
+      L.push('      Status: '+(it.status||'—'));
+    });
+    L.push('');
+  });
+
+  L.push('7. VERIFICAÇÃO DE ALINHAMENTO');
+  {
+    const obsOk = todosObjetivos().filter(o=>o.texto&&o.texto.trim().length>=8);
+    const itensPlano = HORIZONTES.flatMap(h=>estado.plano[h.id]);
+    const semVinculo = itensPlano.filter(i=>!itemAlinhado(i)).length;
+    const pond = quadrantesPendentes();
+    L.push('   Objetivos escritos: '+obsOk.length+' de '+todosObjetivos().length+' registrados');
+    L.push('   Estratégias sem objetivo: '+(pond.length?pond.map(q=>q.id).join(', '):'nenhuma'));
+    L.push('   Ações com alinhamento completo: '+(itensPlano.length-semVinculo)+'/'+itensPlano.length);
+    obsOk.forEach(o=>{
+      const n=itensPlano.filter(i=>i.objetivo===o.id).length;
+      L.push('   '+o.codigo+' → '+n+' ação(ões)'+(n?'':'  [SEM AÇÃO]'));
+    });
+  }
+  L.push('');
+
+  L.push('8. REFLEXÃO CRÍTICA');
+  BLOCOS.forEach(b=>{
+    L.push(b.titulo);
+    b.perguntas.forEach(q=>{
+      L.push('  '+q.id.replace('q','')+'. '+q.t);
+      L.push('     Pergunta: '+q.p);
+      L.push('     Minha resposta: '+(estado.critico[q.id]||'(não respondida)'));
+    });
+    L.push('');
+  });
+  if(estado.critico.sinteseGeral){ L.push('SÍNTESE DO GRUPO:'); L.push(estado.critico.sinteseGeral); L.push(''); }
+
+  const ids=compsDoPlano();
+  if(ids.length){
+    L.push('9. EVIDÊNCIAS A PRODUZIR');
+    ids.forEach(id=>{
+      L.push('  • '+POR_ID[id].nome+': '+(estado.critico['ev_'+id]||'(não definida)'));
+    });
+    L.push('');
+  }
+
+  L.push(linha);
+  L.push('FONTES DO CATÁLOGO');
+  L.push('• PMI, Project Manager Competency Development (PMCD) Framework, Third Edition, 2017 —');
+  L.push('  Tabelas 3-1 e 3-2 e Apêndice X3 (competências do gerente de projetos).');
+  L.push('• Módulo complementar (século XXI): PMI Talent Triangle (Ways of Working, Power Skills,');
+  L.push('  Business Acumen); WEF Future of Jobs Report 2025; IPMA ICB4 (People/Practice/Perspective)');
+  L.push('  e Reference Guide on Sustainable PM; pesquisa AI & Project Management 2025');
+  L.push('  (Nieto-Rodriguez & Viana Vargas); Panorama Gestão de Projetos Brasil (Artia);');
+  L.push('  NR-1 (Portaria MTE 1.419/2024) e LGPD (Lei 13.709/2018).');
+  L.push('Documento de reflexão pessoal. Não constitui certificação nem avaliação formal de competências.');
+  L.push(linha);
+  return L.join('\n');
+}
+
+function csvConteudo(){
+  const cab=['Competencia','Grupo','Ref_PMCD','Autoavaliacao','Par','Gestor','Media_externa','Gap','Foco','Observacoes'];
+  const linhas=CATALOGO.map(c=>{
+    const d=estado.comps[c.id], ext=mediaExterna(c.id), g=gapComp(c.id);
+    const cel=v=>v===null?'':String(v).replace(/\./g,',');
+    return [
+      '"'+c.nome.replace(/"/g,'""')+'"', c.gru, c.ref,
+      cel(num(d.auto)), cel(num(d.par)), cel(num(d.gestor)), cel(ext===null?null:Math.round(ext*10)/10), cel(g),
+      d.foco?'sim':'nao', '"'+(d.obs||'').replace(/"/g,'""').replace(/\n/g,' ')+'"'
+    ].join(';');
+  });
+  return '\ufeff'+[cab.join(';')].concat(linhas).join('\r\n');
+}
+
+/* ---------- Botões de exportação / importação ---------- */
+function ligarExportacao(){
+  const preencher=()=>{ const t=relatorioTexto(); $('#saidaTexto').value=t; return t; };
+
+  $('#btnGerarTxt')?.addEventListener('click', ()=>{ preencher(); toast('Relatório gerado no campo abaixo.'); });
+  $('#btnTxt')?.addEventListener('click', ()=>{ preencher(); irPara('resumo'); setTimeout(()=>$('#saidaTexto').scrollIntoView({behavior:'smooth',block:'center'}),250); });
+
+  const copiar=async()=>{
+    const t = $('#saidaTexto').value || preencher();
+    try{
+      await navigator.clipboard.writeText(t);
+      toast('Relatório copiado para a área de transferência.');
+    }catch(e){
+      const ta=$('#saidaTexto'); ta.select(); document.execCommand('copy'); toast('Relatório copiado.');
+    }
+  };
+  $('#btnCopiar')?.addEventListener('click', copiar);
+
+  $('#btnBaixarTxt')?.addEventListener('click', ()=>{
+    baixar('planejamento-carreira-pmcd.txt', $('#saidaTexto').value || relatorioTexto());
+    toast('Arquivo .txt baixado.');
+  });
+  $('#btnImprimir')?.addEventListener('click', ()=>window.print());
+  $('#btnImprimirCritico')?.addEventListener('click', ()=>{ irPara('critico'); setTimeout(()=>window.print(),300); });
+
+  const json=()=>JSON.stringify(estado,null,2);
+  const baixarJson=()=>{ baixar('planejamento-carreira-pmcd.json', json(), 'application/json'); toast('Backup .json baixado.'); };
+  $('#btnJson')?.addEventListener('click', baixarJson);
+  $('#btnBaixarJson')?.addEventListener('click', baixarJson);
+
+  $('#btnCsv')?.addEventListener('click', ()=>{ baixar('mapeamento-competencias.csv', csvConteudo(), 'text/csv;charset=utf-8'); toast('Planilha CSV baixada.'); });
+
+  $('#inputImportar')?.addEventListener('change', ev=>{
+    const f=ev.target.files[0]; if(!f) return;
+    const r=new FileReader();
+    r.onload=()=>{
+      try{
+        const obj=JSON.parse(r.result);
+        if(!obj || typeof obj!=='object' || !obj.comps) throw new Error('estrutura');
+        estado=Object.assign(estadoPadrao(), obj);
+        estado.comps=Object.assign(estadoPadrao().comps, obj.comps||{});
+        estado.swot=Object.assign(estadoPadrao().swot, obj.swot||{});
+        estado.plano=Object.assign(estadoPadrao().plano, obj.plano||{});
+        const objs=estadoPadrao().objetivos;
+        ['FO','WO','FA','WT'].forEach(q=>{ objs[q]=Array.isArray(((obj.objetivos||{})[q]))?obj.objetivos[q]:[]; });
+        estado.objetivos=objs;
+        estado.critico=obj.critico||{};
+        estado.meta=Object.assign(estadoPadrao().meta, obj.meta||{});
+        salvar(); preencherCampos(); renderTudo();
+        toast('Backup importado com sucesso.');
+      }catch(err){ alert('Arquivo inválido. Selecione um backup .json gerado por esta ferramenta.'); }
+    };
+    r.readAsText(f);
+    ev.target.value='';
+  });
+
+  $('#btnApagar')?.addEventListener('click', ()=>{
+    if(!confirm('Apagar todos os dados salvos neste navegador? Esta ação não pode ser desfeita. Exporte um backup antes.')) return;
+    try{ if(LS) LS.removeItem(CHAVE); }catch(e){}
+    estado=estadoPadrao();
+    preencherCampos(); renderTudo();
+    toast('Dados apagados.');
+  });
+
+  $('#btnSalvarAgora')?.addEventListener('click', ()=>{
+    clearTimeout(timerSalvar);
+    try{
+      if(!LS) throw new Error('sem armazenamento');
+      LS.setItem(CHAVE, JSON.stringify(estado)); marcarStatus('Salvo neste navegador', true); toast('Dados salvos localmente.');
+    }
+    catch(e){ marcarStatus('Falha ao salvar', false); toast('Não foi possível salvar: armazenamento indisponível.'); }
+  });
+
+  $('#btnExpandir')?.addEventListener('click', ()=>{
+    $$('.comp').forEach(c=>{ c.dataset.aberto='true'; const h=c.querySelector('.comp-cab'); if(h) h.setAttribute('aria-expanded','true'); });
+  });
+  $('#btnRecolher')?.addEventListener('click', ()=>{
+    $$('.comp').forEach(c=>{ c.dataset.aberto='false'; const h=c.querySelector('.comp-cab'); if(h) h.setAttribute('aria-expanded','false'); });
+  });
+}
+
+/* ================================================================
+   10) PREENCHIMENTO DE CAMPOS E INICIALIZAÇÃO
+   ================================================================ */
+function preencherCampos(){
+  $$('[data-meta]').forEach(el=>{ el.value = estado.meta[el.dataset.meta]||''; });
+  $$('[data-swot]').forEach(el=>{ el.value = estado.swot[el.dataset.swot]||''; });
+  $$('[data-critico]').forEach(el=>{ el.value = estado.critico[el.dataset.critico]||''; });
+  const so=$('#soAvaliadas'); if(so) so.checked = !!estado.ui.soAvaliadas;
+  const ord=$('#ordenacao'); if(ord) ord.value = estado.ui.ordem||'catalogo';
+  const gg=$('#grupoGrafico'); if(gg) gg.value = estado.ui.grupoGrafico||'todos';
+  $$('[data-filtro]').forEach(b=>b.setAttribute('aria-selected', String(b.dataset.filtro===(estado.ui.filtro||'todos'))));
+}
+
+function renderTudo(){
+  renderMapeamento();
+  renderObjetivos();
+  renderPlano();
+  renderApoioSwot();
+  renderCritico();
+  renderResumo();
+  atualizarProgresso();
+}
+
+(function iniciar(){
+  const tinhaDados = carregar();
+  preencherCampos();
+  renderTudo();
+  ligarExportacao();
+  marcarStatus(tinhaDados?'Dados anteriores carregados':'Salvamento automático ativo', true);
+  if(tinhaDados) setTimeout(()=>toast('Planejamento anterior recuperado do navegador.'), 600);
+  // salva ao sair, como proteção extra
+  window.addEventListener('beforeunload', ()=>{ try{ if(LS) LS.setItem(CHAVE, JSON.stringify(estado)); }catch(e){} });
+  if(!LS){ setTimeout(()=>marcarStatus('Pré-visualização sem salvamento — baixe o arquivo e abra no navegador', false), 800); }
+})();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a5d111facfbff237',t:'MTc5NTExMDc2Mg=='};var l=window.parent.location,o;try{o=new URL(l.origin).origin}catch(e){try{o=new URL(new URL(l.href).origin).origin}catch(e){o=''}}var u='/cdn-cgi/challenge-platform/scripts/jsd/main.js?ray=a5d111facfbff237',a=document.createElement('script');a.src=o?new URL(u,o).href:u;document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/vce701823e78c4301a35b7e07294d87301792088814092" integrity="sha512-UKNk8GbxkABxKcXYuLkO16EleLGUkcvJWtpSNmExE0Too3ZaFAxTscNWEc1OdAv5/BikHawapSCaiD2XCmp+Bw==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
+</body>
+</html>
